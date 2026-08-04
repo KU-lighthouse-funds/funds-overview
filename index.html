@@ -11,57 +11,57 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="page-landing">
-  <header class="hero hero-full">
+  <header class="hero">
+    <div class="hero-media" aria-hidden="true"></div>
     <div class="hero-scrim" aria-hidden="true"></div>
-    <img
-      class="hero-wave"
-      src="assets/lighthouse/amplifier_wave_light_blue.svg"
-      alt=""
-      aria-hidden="true"
-    />
-    <div class="hero-inner">
-      <p class="brand">KU Lighthouse</p>
+    <div class="hero-copy">
+      <p class="eyebrow">KU Lighthouse</p>
       <h1>Search for funding opportunities for your project</h1>
       <p class="lede">
-        Explore grants, programmes, and support curated for founders and researchers
-        across Denmark, the Nordics, and Europe.
-      </p>
-
-      <form class="filters" id="search-form" action="results.html" method="get">
-        <div class="filter-block">
-          <label class="field-label" for="stage">Where are you on your journey?</label>
-          <p class="hint">Select one or more stages</p>
-          <select id="stage" name="stage" multiple size="5" class="multi">
-            <option value="Exploratory innovation">Exploratory innovation</option>
-            <option value="PoC">PoC</option>
-            <option value="Early venture">Early venture</option>
-            <option value="Growth/scale">Growth/scale</option>
-            <option value="All stages">All stages</option>
-          </select>
-        </div>
-
-        <div class="filter-block">
-          <label class="field-label" for="segment">Industry segment</label>
-          <p class="hint">Select one or more segments</p>
-          <select id="segment" name="segment" multiple size="8" class="multi"></select>
-        </div>
-
-        <div class="filter-block">
-          <label class="field-label" for="q">Keyword (optional)</label>
-          <input id="q" name="q" type="search" placeholder="Name, funder, keyword…" autocomplete="off" />
-        </div>
-
-        <p class="match-count" id="match-count" aria-live="polite">Loading programmes…</p>
-
-        <button type="submit" class="btn-search">Search</button>
-      </form>
-
-      <p class="disclaimer-inline">
-        Data may contain errors — always verify with the provider.
-        Feedback: <a href="mailto:kly@adm.ku.dk">kly@adm.ku.dk</a>
+        Explore grants, programmes, and support curated for founders and
+        researchers across Denmark, the Nordics, and Europe.
       </p>
     </div>
   </header>
+
+  <main class="search-wrap">
+    <form class="search-card" id="search-form">
+      <div class="search-grid">
+        <div class="field">
+          <label class="field-label" id="stage-label">
+            Where are you on your journey?
+            <span class="why" title="Pick the stage that best matches your project today.">i</span>
+          </label>
+          <div class="ms" id="ms-stage" data-placeholder="Choose one or more stages"></div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" id="segment-label">
+            Select your industry segment to find relevant opportunities
+          </label>
+          <div class="ms" id="ms-segment" data-placeholder="Choose one or more industry segments"></div>
+        </div>
+      </div>
+
+      <div class="search-foot">
+        <p class="count" id="match-count" aria-live="polite">Loading programmes…</p>
+        <button type="submit" class="btn-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3.6-3.6" />
+          </svg>
+          Search
+        </button>
+      </div>
+    </form>
+
+    <p class="disclaimer">
+      Disclaimer: This data is assembled with the help of AI and may contain errors or be out of date.
+      Always verify details directly with the funding provider before applying. Spotted an error or have
+      feedback on the dataset? Please contact <a href="mailto:kly@adm.ku.dk">kly@adm.ku.dk</a>.
+    </p>
+  </main>
 
   <script src="landing.js" type="module"></script>
 </body>

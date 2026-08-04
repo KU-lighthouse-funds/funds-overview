@@ -1,36 +1,78 @@
-import {
-  loadProgrammes,
-  parseSegments,
-  countMatches,
-  readFiltersFromForm,
-} from "./shared.js";
+import { loadProgrammes, parseSegments, countMatches } from "./shared.js";
+import { createMultiSelect } from "./multiselect.js";
+
+const STAGE_OPTIONS = [
+  {
+    value: "Exploratory innovation",
+    label: "Exploratory innovation",
+    desc: "Pre-proof-of-concept — research, idea exploration, pre-company",
+  },
+  {
+    value: "PoC",
+    label: "PoC",
+    desc: "Proof-of-concept / validation — testing whether the idea works",
+  },
+  {
+    value: "Early venture",
+    label: "Early venture",
+    desc: "Company building — pre-seed/seed, first customers, incorporation",
+  },
+  {
+    value: "Growth/scale",
+    label: "Growth/scale",
+    desc: "Post-seed scale-up — growth funding, pilots at scale, expansion",
+  },
+  {
+    value: "All stages",
+    label: "All stages",
+    desc: "Not a step on the ladder — programmes and events open across the journey",
+  },
+];
 
 async function init() {
   const programmes = await loadProgrammes();
-  const segmentSelect = document.getElementById("segment");
+
   const segments = new Set();
   programmes.forEach((p) => parseSegments(p).forEach((s) => segments.add(s)));
-  [...segments]
+  const segmentOptions = [...segments]
     .sort((a, b) => a.localeCompare(b))
-    .forEach((s) => {
-      const opt = document.createElement("option");
-      opt.value = s;
-      opt.textContent = s;
-      segmentSelect.appendChild(opt);
-    });
+    .map((s) => ({ value: s, label: s }));
 
-  const form = document.getElementById("search-form");
   const countEl = document.getElementById("match-count");
+  const state = { stages: [], segments: [], query: "", cvr: "all" };
 
   function updateCount() {
-    const filters = readFiltersFromForm(form);
-    const n = countMatches(programmes, filters);
+    const n = countMatches(programmes, state);
     countEl.textContent = `${n} matching opportunit${n === 1 ? "y" : "ies"} so far`;
   }
 
-  form.addEventListener("change", updateCount);
-  form.addEventListener("input", updateCount);
+  const stageMs = createMultiSelect(document.getElementById("ms-stage"), {
+    options: STAGE_OPTIONS,
+    placeholder: document.getElementById("ms-stage").dataset.placeholder,
+    onChange: (values) => {
+      state.stages = values;
+      updateCount();
+    },
+  });
+
+  const segmentMs = createMultiSelect(document.getElementById("ms-segment"), {
+    options: segmentOptions,
+    placeholder: document.getElementById("ms-segment").dataset.placeholder,
+    onChange: (values) => {
+      state.segments = values;
+      updateCount();
+    },
+  });
+
   updateCount();
+
+  document.getElementById("search-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    stageMs.values().forEach((v) => params.append("stage", v));
+    segmentMs.values().forEach((v) => params.append("segment", v));
+    window.location.href = `results.html?${params.toString()}`;
+  });
 }
 
 init().catch((err) => {

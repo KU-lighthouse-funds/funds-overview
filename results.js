@@ -2,125 +2,212 @@ import {
   loadProgrammes,
   filtersFromUrl,
   filterProgrammes,
+  parseSegments,
   isSignificantFunding,
+  hasKuSupport,
   escapeHtml,
 } from "./shared.js";
 
-const state = { expanded: new Set() };
+const state = {
+  all: [],
+  filters: filtersFromUrl(),
+  sort: { key: null, dir: 1 },
+  expanded: new Set(),
+};
 
-function cvrShort(value) {
-  const v = (value || "Any").trim();
-  if (v === "Yes") return "required";
-  if (v === "No") return "pre-company";
-  return "any";
+function cvrTags(row) {
+  const atApplication = (row["CVR at application"] || "Any").trim();
+  const atStart = (row["CVR at programme start"] || "Any").trim();
+  const tags = [];
+  if (atApplication === "No") tags.push({ text: "Pre-company", cls: "" });
+  if (atApplication === "Yes") tags.push({ text: "CVR required", cls: "has" });
+  if (atApplication !== "Yes" && atStart === "Yes") {
+    tags.push({ text: "CVR by start", cls: "has" });
+  }
+  return tags;
 }
 
-function hasKuSupport(row) {
-  const unit = (row["KU support unit"] || "").trim();
-  return unit && unit !== "—" && unit !== "-" && unit !== "–";
+function segmentChips(row) {
+  const segs = parseSegments(row);
+  if (!segs.length) return "";
+  return `<div class="chips">${segs
+    .map(
+      (s) =>
+        `<span class="chip${s.toLowerCase() === "general" ? " general" : ""}">${escapeHtml(s)}</span>`
+    )
+    .join("")}</div>`;
 }
 
-function renderRow(row, idx) {
-  const id = `${row.Name}::${idx}`;
+function rowHtml(row, idx) {
+  const id = String(idx);
   const open = state.expanded.has(id);
+
   const funding = (row["Funding Amount"] || "").trim();
   const quick = (row["Quick info"] || "").trim();
   const lead = isSignificantFunding(funding) ? funding : "";
   const body = quick || (lead ? "" : funding || "—");
-  const needsClamp = (lead + " " + body).length > 180;
 
-  const geo = (row.Geography || "").trim() || "—";
-  const cvrApp = cvrShort(row["CVR at application"]);
-  const cvrStart = cvrShort(row["CVR at programme start"]);
+  const geo = (row.Geography || "").trim();
+  const tags = cvrTags(row);
 
-  const extra = [];
-  if (row.Deadline) {
-    extra.push(`<p><strong>Deadline:</strong> ${escapeHtml(row.Deadline)}</p>`);
-  }
-  if (hasKuSupport(row) && row["KU contact hint"]) {
-    extra.push(
-      `<p><strong>Who to ask:</strong> ${escapeHtml(row["KU contact hint"])}</p>`
-    );
-  }
+  const kuLine = hasKuSupport(row)
+    ? `<p class="ku-line"><span class="ku-dot"></span>KU: ${escapeHtml(
+        row["KU support unit"]
+      )}${row["KU faculty focus"] ? ` · ${escapeHtml(row["KU faculty focus"])}` : ""}</p>`
+    : "";
 
-  let kuBlock = "";
-  if (hasKuSupport(row)) {
-    let ku = escapeHtml(row["KU support unit"]);
-    if (row["KU faculty focus"]) {
-      ku += ` · ${escapeHtml(row["KU faculty focus"])}`;
-    }
-    kuBlock = `<p class="ku-inline"><strong>KU partner:</strong> ${ku}</p>`;
-  }
+  const rowClasses = [open ? "is-open" : "", idx % 2 === 1 ? "alt" : ""]
+    .filter(Boolean)
+    .join(" ");
 
-  return `
-    <tr>
+  const main = `
+    <tr class="${rowClasses}">
       <td class="name-cell">
-        ${
-          row.Link
-            ? `<a href="${escapeHtml(row.Link)}" target="_blank" rel="noopener">${escapeHtml(row.Name)}</a>`
-            : escapeHtml(row.Name)
-        }
-        <p class="name-meta">${escapeHtml(geo)}</p>
-        <p class="name-meta">CVR apply: ${escapeHtml(cvrApp)} · CVR start: ${escapeHtml(cvrStart)}</p>
+        <div class="name-row">
+          <button type="button" class="caret" data-toggle="${id}"
+                  aria-expanded="${open}" aria-label="Toggle details">▶</button>
+          <span>${
+            row.Link
+              ? `<a href="${escapeHtml(row.Link)}" target="_blank" rel="noopener">${escapeHtml(row.Name)}</a>`
+              : escapeHtml(row.Name)
+          }</span>
+        </div>
+        <p class="name-sub">
+          ${geo ? `<span>${escapeHtml(geo)}</span>` : ""}
+          ${tags
+            .map((t) => `<span class="cvr-tag ${t.cls}">${escapeHtml(t.text)}</span>`)
+            .join("")}
+        </p>
       </td>
       <td>${escapeHtml(row.Opportunity || "")}</td>
-      <td>${escapeHtml(row["Industrial segment"] || "")}</td>
-      <td class="criteria-cell">${escapeHtml(row.Criteria || "—")}</td>
-      <td>${escapeHtml(row.Stage || "")}</td>
+      <td>${segmentChips(row)}</td>
+      <td class="criteria-cell">
+        <span class="${open ? "" : "clamped"}">${escapeHtml(row.Criteria || "—")}</span>
+        ${open ? "" : `<p class="read-more">Click to read more</p>`}
+      </td>
+      <td class="stage-cell">${escapeHtml(row.Stage || "")}</td>
       <td class="info-cell">
         ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
-        <p class="info-text ${!open && needsClamp ? "clamped" : ""}">${escapeHtml(body)}</p>
-        ${kuBlock}
-        ${
-          needsClamp || extra.length
-            ? `<button type="button" class="toggle-more" data-toggle="${escapeHtml(id)}">${
-                open ? "Show less" : "Read more…"
-              }</button>`
-            : ""
-        }
-        ${open && extra.length ? `<div class="extra">${extra.join("")}</div>` : ""}
+        <p class="info-text ${open ? "" : "clamped"}">${escapeHtml(body)}</p>
+        ${kuLine}
       </td>
     </tr>
   `;
+
+  if (!open) return main;
+
+  const cells = [];
+  if (row.Deadline) {
+    cells.push(`<div><h4>Deadline</h4><p>${escapeHtml(row.Deadline)}</p></div>`);
+  }
+  if (hasKuSupport(row)) {
+    cells.push(
+      `<div><h4>KU partner</h4><p>${escapeHtml(row["KU support unit"])}${
+        row["KU faculty focus"] ? ` · ${escapeHtml(row["KU faculty focus"])}` : ""
+      }</p></div>`
+    );
+  }
+  if (row["KU contact hint"]) {
+    cells.push(
+      `<div><h4>Who to ask</h4><p>${escapeHtml(row["KU contact hint"])}</p></div>`
+    );
+  }
+  if (funding && !lead) {
+    cells.push(`<div><h4>Funding</h4><p>${escapeHtml(funding)}</p></div>`);
+  }
+
+  return `${main}
+    <tr class="detail-row">
+      <td colspan="6">
+        <div class="detail-grid">${cells.join("")}</div>
+      </td>
+    </tr>`;
 }
 
-function summaryText(filters) {
-  const bits = [];
-  if (filters.stages.length) bits.push(`Stages: ${filters.stages.join(", ")}`);
-  if (filters.segments.length) bits.push(`Segments: ${filters.segments.join(", ")}`);
-  if (filters.query) bits.push(`Keyword: “${filters.query}”`);
-  return bits.length ? bits.join(" · ") : "No filters — showing all programmes";
+function sorted(rows) {
+  const { key, dir } = state.sort;
+  if (!key) return rows;
+  return [...rows].sort((a, b) =>
+    String(a[key] || "").localeCompare(String(b[key] || ""), "en", {
+      sensitivity: "base",
+    }) * dir
+  );
 }
 
-async function init() {
-  const programmes = await loadProgrammes();
-  const filters = filtersFromUrl();
-  const filtered = filterProgrammes(programmes, filters);
-
-  document.getElementById("match-count").textContent =
-    `${filtered.length} matching opportunit${filtered.length === 1 ? "y" : "ies"}`;
-  document.getElementById("filter-summary").textContent = summaryText(filters);
-
+function paint() {
+  const matched = sorted(filterProgrammes(state.all, state.filters));
   const body = document.getElementById("results-body");
   const empty = document.getElementById("empty");
 
-  function paint() {
-    body.innerHTML = filtered.map((row, i) => renderRow(row, i)).join("");
-    empty.classList.toggle("hidden", filtered.length > 0);
-    body.querySelectorAll("[data-toggle]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-toggle");
-        if (state.expanded.has(id)) state.expanded.delete(id);
-        else state.expanded.add(id);
-        paint();
-      });
-    });
+  body.innerHTML = matched.map(rowHtml).join("");
+  empty.classList.toggle("hidden", matched.length > 0);
+  document.getElementById("result-count").textContent =
+    `${matched.length} of ${state.all.length} results`;
+
+  function toggleRow(id) {
+    if (state.expanded.has(id)) state.expanded.delete(id);
+    else state.expanded.add(id);
+    paint();
   }
+
+  body.querySelectorAll("[data-toggle]").forEach((btn) => {
+    btn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleRow(btn.dataset.toggle);
+    });
+  });
+
+  body.querySelectorAll("tr:not(.detail-row)").forEach((tr) => {
+    tr.addEventListener("click", (event) => {
+      if (event.target.closest("a")) return;
+      const btn = tr.querySelector("[data-toggle]");
+      if (btn) toggleRow(btn.dataset.toggle);
+    });
+  });
+}
+
+async function init() {
+  state.all = await loadProgrammes();
+
+  const q = document.getElementById("q");
+  q.value = state.filters.query || "";
+  q.addEventListener("input", () => {
+    state.filters.query = q.value.trim();
+    state.expanded.clear();
+    paint();
+  });
+
+  document.querySelectorAll(".seg button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.filters.cvr = btn.dataset.cvr;
+      document
+        .querySelectorAll(".seg button")
+        .forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      state.expanded.clear();
+      paint();
+    });
+  });
+
+  document.querySelectorAll("th.sortable").forEach((th) => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.sort;
+      state.sort =
+        state.sort.key === key
+          ? { key, dir: -state.sort.dir }
+          : { key, dir: 1 };
+      document
+        .querySelectorAll("th.sortable")
+        .forEach((other) => other.removeAttribute("aria-sort"));
+      th.setAttribute("aria-sort", state.sort.dir === 1 ? "ascending" : "descending");
+      state.expanded.clear();
+      paint();
+    });
+  });
 
   paint();
 }
 
 init().catch((err) => {
   console.error(err);
-  document.getElementById("match-count").textContent = "Could not load data.";
+  document.getElementById("result-count").textContent = "Could not load data.";
 });

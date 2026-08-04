@@ -28,6 +28,11 @@ export function parseSegments(row) {
     .filter(Boolean);
 }
 
+export function hasKuSupport(row) {
+  const unit = (row["KU support unit"] || "").trim();
+  return Boolean(unit) && !["—", "–", "-", "?"].includes(unit);
+}
+
 export function escapeHtml(s) {
   return String(s)
     .replaceAll("&", "&amp;")
@@ -42,30 +47,36 @@ export async function loadProgrammes() {
   return res.json();
 }
 
-export function readFiltersFromForm(form) {
-  const stages = [...form.stage.selectedOptions].map((o) => o.value);
-  const segments = [...form.segment.selectedOptions].map((o) => o.value);
-  const query = (form.q.value || "").trim();
-  return { stages, segments, query };
-}
-
 export function filtersFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return {
     stages: params.getAll("stage"),
     segments: params.getAll("segment"),
     query: (params.get("q") || "").trim(),
+    cvr: params.get("cvr") || "all",
   };
 }
 
 export function filterProgrammes(programmes, filters) {
-  const q = filters.query.toLowerCase();
+  const q = (filters.query || "").toLowerCase();
+  const cvr = filters.cvr || "all";
+
   return programmes.filter((row) => {
-    if (filters.stages.length && !filters.stages.includes(row.Stage)) return false;
-    if (filters.segments.length) {
+    if (filters.stages?.length && !filters.stages.includes(row.Stage)) return false;
+
+    if (filters.segments?.length) {
       const segs = parseSegments(row);
-      if (!filters.segments.some((s) => segs.includes(s))) return false;
+      // "General" programmes are relevant to every segment, so they always show.
+      const isGeneral = segs.some((s) => s.toLowerCase() === "general");
+      if (!isGeneral && !filters.segments.some((s) => segs.includes(s))) return false;
     }
+
+    if (cvr !== "all") {
+      const atApplication = (row["CVR at application"] || "Any").trim();
+      if (cvr === "no-company" && atApplication === "Yes") return false;
+      if (cvr === "have-cvr" && atApplication === "No") return false;
+    }
+
     if (!q) return true;
     const hay = [
       row.Name,

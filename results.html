@@ -3,45 +3,56 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Results — KU Lighthouse funding</title>
+  <title>Funding overview — KU Lighthouse</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="page-results">
-  <header class="results-bar">
-    <div class="results-bar-inner">
-      <a class="back" href="index.html">← New search</a>
-      <div>
-        <p class="brand-inline">KU Lighthouse</p>
-        <h1>Matching opportunities</h1>
-        <p class="match-line" id="match-count">Loading…</p>
-        <p class="filter-summary" id="filter-summary"></p>
-      </div>
+  <header class="results-head">
+    <div class="shell">
+      <a class="back" href="index.html">← Back to search</a>
+      <h1>Funding overview</h1>
+      <p class="results-intro">
+        Search and filter grants, accelerators and programmes. Entries tagged as
+        <strong>General</strong> are always shown regardless of industry segment.
+      </p>
     </div>
   </header>
 
-  <main class="results-main">
+  <main class="shell results-main">
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Search name, criteria, keyword…" autocomplete="off" />
+      <div class="seg" role="group" aria-label="Company status">
+        <button type="button" data-cvr="all" aria-pressed="true">All</button>
+        <button type="button" data-cvr="no-company" aria-pressed="false">No company yet</button>
+        <button type="button" data-cvr="have-cvr" aria-pressed="false">I have a CVR</button>
+      </div>
+      <p class="result-count" id="result-count">Loading…</p>
+    </div>
+
     <div class="table-wrap">
       <table id="results-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Opportunity</th>
-            <th>Industry segment</th>
+            <th class="sortable" data-sort="Name">Name <span class="arrow">↕</span></th>
+            <th class="sortable" data-sort="Opportunity">Opportunity <span class="arrow">↕</span></th>
+            <th class="sortable" data-sort="Industrial segment">Industry segment <span class="arrow">↕</span></th>
             <th>Criteria</th>
-            <th>Stage</th>
+            <th class="sortable" data-sort="Stage">Stage <span class="arrow">↕</span></th>
             <th>Info</th>
           </tr>
         </thead>
         <tbody id="results-body"></tbody>
       </table>
+      <p id="empty" class="empty hidden">
+        No programmes match. <a href="index.html">Try a new search</a>.
+      </p>
     </div>
-    <p id="empty" class="empty hidden">No programmes match. <a href="index.html">Try a new search</a>.</p>
   </main>
 
-  <footer class="site-footer">
+  <footer class="shell site-footer">
     <p>
       Disclaimer: This data is assembled with the help of AI and may contain errors or be out of date.
       Always verify details directly with the funding provider before applying.
