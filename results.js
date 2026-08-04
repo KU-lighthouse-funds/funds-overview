@@ -30,13 +30,23 @@ function cvrTags(row) {
 
 function segmentChips(row) {
   const segs = parseSegments(row);
+  const picked = new Set(state.filters.segments || []);
   if (!segs.length) return "";
   return `<div class="chips">${segs
-    .map(
-      (s) =>
-        `<span class="chip${s.toLowerCase() === "general" ? " general" : ""}">${escapeHtml(s)}</span>`
-    )
+    .map((s) => {
+      const cls = picked.has(s) ? " chip picked" : " chip";
+      return `<span class="${cls.trim()}">${escapeHtml(s)}</span>`;
+    })
     .join("")}</div>`;
+}
+
+function stageCell(row) {
+  const stage = (row.Stage || "").trim();
+  const picked = state.filters.stages || [];
+  if (picked.length && picked.includes(stage)) {
+    return `<span class="stage-picked">${escapeHtml(stage)}</span>`;
+  }
+  return escapeHtml(stage);
 }
 
 /** "a@ku.dk" or "Nørre: a@ku.dk | Søndre: b@ku.dk" -> [{ label, address }]. */
@@ -168,7 +178,7 @@ function rowHtml(row, idx) {
       <td class="criteria-cell">
         <span class="${open ? "" : "clamped"}">${escapeHtml(criteria || "—")}</span>
       </td>
-      <td class="stage-cell">${escapeHtml(row.Stage || "")}</td>
+      <td class="stage-cell">${stageCell(row)}</td>
       <td class="info-cell">
         ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
         <p class="info-text ${open ? "" : "clamped"}">${escapeHtml(body)}</p>

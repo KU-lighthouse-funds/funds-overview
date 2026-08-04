@@ -52,8 +52,7 @@ img { display: block; }
 .hero h1,
 .results-head h1,
 thead th,
-.btn-search,
-.chip.general {
+.btn-search {
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -550,10 +549,22 @@ tbody tr.is-open > td { background: rgba(183, 215, 222, 0.5); }
   white-space: nowrap;
 }
 
-.chip.general {
-  background: var(--light-blue);
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
+.chip.picked {
+  background: rgba(183, 215, 222, 0.65);
+  border-color: var(--light-blue);
+  font-weight: 600;
+}
+
+.stage-picked {
+  display: inline-block;
+  padding: 0.12rem 0.42rem;
+  background: rgba(183, 215, 222, 0.65);
+  border: 1px solid var(--light-blue);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--dark-blue);
+  white-space: nowrap;
 }
 
 .criteria-cell {
