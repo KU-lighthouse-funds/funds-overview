@@ -8,11 +8,16 @@ import {
 
 const state = { expanded: new Set() };
 
-function cvrLabel(value, when) {
+function cvrShort(value) {
   const v = (value || "Any").trim();
-  if (v === "Yes") return { text: `CVR ${when}: required`, cls: "yes" };
-  if (v === "No") return { text: `CVR ${when}: pre-company`, cls: "no" };
-  return { text: `CVR ${when}: any`, cls: "any" };
+  if (v === "Yes") return "required";
+  if (v === "No") return "pre-company";
+  return "any";
+}
+
+function hasKuSupport(row) {
+  const unit = (row["KU support unit"] || "").trim();
+  return unit && unit !== "—" && unit !== "-" && unit !== "–";
 }
 
 function renderRow(row, idx) {
@@ -21,47 +26,51 @@ function renderRow(row, idx) {
   const funding = (row["Funding Amount"] || "").trim();
   const quick = (row["Quick info"] || "").trim();
   const lead = isSignificantFunding(funding) ? funding : "";
-  const body = quick || (lead ? "" : "—");
+  const body = quick || (lead ? "" : funding || "—");
   const needsClamp = (lead + " " + body).length > 180;
-  const app = cvrLabel(row["CVR at application"], "apply");
-  const start = cvrLabel(row["CVR at programme start"], "start");
+
+  const geo = (row.Geography || "").trim() || "—";
+  const cvrApp = cvrShort(row["CVR at application"]);
+  const cvrStart = cvrShort(row["CVR at programme start"]);
 
   const extra = [];
   if (row.Deadline) {
     extra.push(`<p><strong>Deadline:</strong> ${escapeHtml(row.Deadline)}</p>`);
   }
-  if (row["KU support unit"] && row["KU support unit"] !== "—") {
+  if (hasKuSupport(row) && row["KU contact hint"]) {
     extra.push(
-      `<p><strong>KU support:</strong> ${escapeHtml(row["KU support unit"])}` +
-        (row["KU faculty focus"] ? ` · ${escapeHtml(row["KU faculty focus"])}` : "") +
-        `</p>`
+      `<p><strong>Who to ask:</strong> ${escapeHtml(row["KU contact hint"])}</p>`
     );
   }
-  if (row["KU contact hint"]) {
-    extra.push(`<p><strong>Who to ask:</strong> ${escapeHtml(row["KU contact hint"])}</p>`);
+
+  let kuBlock = "";
+  if (hasKuSupport(row)) {
+    let ku = escapeHtml(row["KU support unit"]);
+    if (row["KU faculty focus"]) {
+      ku += ` · ${escapeHtml(row["KU faculty focus"])}`;
+    }
+    kuBlock = `<p class="ku-inline"><strong>KU partner:</strong> ${ku}</p>`;
   }
 
   return `
     <tr>
-      <td><span class="muted">${escapeHtml(row.Opportunity || "")}</span></td>
       <td class="name-cell">
         ${
           row.Link
             ? `<a href="${escapeHtml(row.Link)}" target="_blank" rel="noopener">${escapeHtml(row.Name)}</a>`
             : escapeHtml(row.Name)
         }
+        <p class="name-meta">${escapeHtml(geo)}</p>
+        <p class="name-meta">CVR apply: ${escapeHtml(cvrApp)} · CVR start: ${escapeHtml(cvrStart)}</p>
       </td>
+      <td>${escapeHtml(row.Opportunity || "")}</td>
+      <td>${escapeHtml(row["Industrial segment"] || "")}</td>
+      <td class="criteria-cell">${escapeHtml(row.Criteria || "—")}</td>
       <td>${escapeHtml(row.Stage || "")}</td>
-      <td>${escapeHtml(row.Geography || "")}</td>
-      <td>
-        <div class="cvr">
-          <span class="badge ${app.cls}">${escapeHtml(app.text)}</span>
-          <span class="badge ${start.cls}">${escapeHtml(start.text)}</span>
-        </div>
-      </td>
       <td class="info-cell">
         ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
         <p class="info-text ${!open && needsClamp ? "clamped" : ""}">${escapeHtml(body)}</p>
+        ${kuBlock}
         ${
           needsClamp || extra.length
             ? `<button type="button" class="toggle-more" data-toggle="${escapeHtml(id)}">${

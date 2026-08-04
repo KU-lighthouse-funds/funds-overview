@@ -243,7 +243,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
-  min-width: 860px;
+  min-width: 980px;
   background: var(--champagne);
 }
 
@@ -271,6 +271,10 @@ td {
 
 tbody tr:hover td { background: rgba(183, 215, 222, 0.28); }
 
+.name-cell {
+  min-width: 11rem;
+  max-width: 16rem;
+}
 .name-cell a {
   color: var(--dark-blue);
   font-weight: 600;
@@ -278,36 +282,30 @@ tbody tr:hover td { background: rgba(183, 215, 222, 0.28); }
 }
 .name-cell a:hover { color: var(--red-orange); text-decoration: underline; }
 
+.name-meta {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--dark-grey);
+}
+
+.criteria-cell {
+  max-width: 14rem;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: var(--dark-grey);
+}
+
 .muted { color: var(--dark-grey); font-size: 0.82rem; }
 
-.cvr {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 5.6rem;
-}
+.info-cell { max-width: 26rem; }
 
-.badge {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.15rem 0.45rem;
-  border-radius: 0;
-  width: fit-content;
-  border: 1.5px solid var(--dark-blue);
-  background: transparent;
+.ku-inline {
+  margin: 0.45rem 0 0;
+  font-size: 0.8rem;
   color: var(--dark-blue);
+  line-height: 1.35;
 }
-.badge.yes {
-  border-color: var(--dark-blue);
-  background: rgba(183, 215, 222, 0.45);
-}
-.badge.no {
-  border-color: var(--red-orange);
-  color: var(--red-orange);
-}
-
-.info-cell { max-width: 28rem; }
 
 .funding-lead {
   font-weight: 600;
