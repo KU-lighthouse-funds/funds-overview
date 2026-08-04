@@ -6,6 +6,7 @@ import {
   isSignificantFunding,
   hasKuSupport,
   escapeHtml,
+  dedupeCopy,
 } from "./shared.js";
 
 const state = {
@@ -114,7 +115,8 @@ function rowExtraHtml(row) {
     blocks.push(`<div><h4>Funding</h4><p>${escapeHtml(funding)}</p></div>`);
   }
   if (!blocks.length) return "";
-  return `<div class="row-extra"><div class="row-extra-grid">${blocks.join("")}</div></div>`;
+  const cols = Math.min(blocks.length, 3);
+  return `<div class="row-extra"><div class="row-extra-grid cols-${cols}">${blocks.join("")}</div></div>`;
 }
 
 function rowHtml(row, idx) {
@@ -122,7 +124,8 @@ function rowHtml(row, idx) {
   const open = state.expanded.has(id);
 
   const funding = (row["Funding Amount"] || "").trim();
-  const quick = (row["Quick info"] || "").trim();
+  const quick = dedupeCopy(row["Quick info"] || "");
+  const criteria = dedupeCopy(row.Criteria || "");
   const lead = isSignificantFunding(funding) ? funding : "";
   const body = quick || (lead ? "" : funding || "—");
 
@@ -132,6 +135,14 @@ function rowHtml(row, idx) {
   const kuLine = hasKuSupport(row)
     ? `<p class="ku-line">KU support: ${kuSupportHtml(row)}</p>`
     : "";
+
+  const hint = (row["KU contact hint"] || "").trim();
+  const hasExtra =
+    Boolean(row.Deadline) ||
+    hasKuSupport(row) ||
+    (hint && !/^(ku lighthouse|preaward rso)\.?$/i.test(hint)) ||
+    (funding && !lead);
+  const showMore = !open && (body.length > 90 || hasExtra);
 
   return `
     <tr class="${open ? "is-open" : ""}">
@@ -155,14 +166,14 @@ function rowHtml(row, idx) {
       <td>${escapeHtml(row.Opportunity || "")}</td>
       <td>${segmentChips(row)}</td>
       <td class="criteria-cell">
-        <span class="${open ? "" : "clamped"}">${escapeHtml(row.Criteria || "—")}</span>
-        ${open ? "" : `<p class="read-more">Show more</p>`}
+        <span class="${open ? "" : "clamped"}">${escapeHtml(criteria || "—")}</span>
       </td>
       <td class="stage-cell">${escapeHtml(row.Stage || "")}</td>
       <td class="info-cell">
         ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
         <p class="info-text ${open ? "" : "clamped"}">${escapeHtml(body)}</p>
         ${open ? rowExtraHtml(row) : kuLine}
+        ${showMore ? `<p class="read-more">Show more</p>` : ""}
       </td>
     </tr>
   `;

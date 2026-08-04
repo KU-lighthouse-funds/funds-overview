@@ -41,6 +41,38 @@ export function escapeHtml(s) {
     .replaceAll('"', "&quot;");
 }
 
+/** Drop repeated or overlapping sentences so Quick info does not restate itself. */
+export function dedupeCopy(text) {
+  const raw = (text || "").trim();
+  if (!raw) return raw;
+
+  const parts = raw.match(/[^.!?]+[.!?]?/g)?.map((p) => p.trim()).filter(Boolean) ?? [raw];
+  const kept = [];
+  const norms = [];
+
+  for (const part of parts) {
+    const norm = part
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!norm) continue;
+
+    const dup = norms.some(
+      (prev) =>
+        prev === norm ||
+        (norm.length >= 20 && prev.includes(norm)) ||
+        (prev.length >= 20 && norm.includes(prev))
+    );
+    if (dup) continue;
+
+    kept.push(part);
+    norms.push(norm);
+  }
+
+  return kept.join(" ").replace(/\s{2,}/g, " ").trim();
+}
+
 export async function loadProgrammes() {
   // One retry: the first request can land while GitHub Pages is still swapping files.
   for (let attempt = 0; attempt < 2; attempt += 1) {
