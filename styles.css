@@ -2,14 +2,17 @@
    Layout follows the original Lovable app; everything visual follows the KU INNO
    design guide (brand directions.pptx):
 
-   - Palette is the six named brand colours, nothing else.
+   - Palette is the six named brand colours, with one exception: the landing hero
+     fades to black rather than to dark blue.
    - Contrast pairs the guide marks as good: dark blue or red-orange on champagne,
      dark blue on light blue, champagne on red-orange. Red-orange never sits on
      light blue and dark blue never sits on red-orange, so the results table stays
      dark blue throughout — its rows turn light blue when hovered or opened.
    - Shapes are flat: square corners, no drop shadows, and either a solid fill or
      a 1.5px outline, never both.
-   - Tables have no fill and a full 1.5px grid in the text colour.
+   - Tables have no fill. The guide's full grid in the text colour was too hard
+     over this much copy, so the results table keeps light blue horizontal rules
+     only and separates columns with spacing.
    - Type is Open Sans: Semibold caps for headings, Regular caps for sub-headings,
      Regular sentence case for body. */
 :root {
@@ -22,6 +25,9 @@
   --purple: #c6c5ff;
 
   --rule: 1.5px;
+  /* Light blue reads as a quiet rule on champagne, so the results table can keep
+     its structure without a hard dark grid. */
+  --line: var(--light-blue);
   --font: "Open Sans", system-ui, -apple-system, sans-serif;
 }
 
@@ -85,7 +91,8 @@ thead th,
 }
 
 /* ——————————————— Landing hero ——————————————— */
-.page-landing { background: var(--dark-blue); }
+/* The hero photo fades to black rather than dark blue, by preference. */
+.page-landing { background: #000000; }
 
 .hero {
   position: relative;
@@ -110,11 +117,11 @@ thead th,
   /* Extra weight at the very top so the negative logo stays legible over sky. */
   background: linear-gradient(
     180deg,
-    rgba(18, 41, 71, 0.66) 0%,
-    rgba(18, 41, 71, 0.3) 18%,
-    rgba(18, 41, 71, 0.3) 40%,
-    rgba(18, 41, 71, 0.78) 76%,
-    var(--dark-blue) 100%
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.26) 18%,
+    rgba(0, 0, 0, 0.26) 40%,
+    rgba(0, 0, 0, 0.76) 76%,
+    #000000 100%
   );
 }
 
@@ -369,7 +376,7 @@ thead th,
   flex: 0 1 20rem;
   min-width: 13rem;
   padding: 0.55rem 0.8rem;
-  border: var(--rule) solid var(--dark-blue);
+  border: var(--rule) solid var(--line);
   font: inherit;
   font-size: 0.9rem;
   color: var(--dark-blue);
@@ -380,7 +387,7 @@ thead th,
 
 .seg {
   display: inline-flex;
-  border: var(--rule) solid var(--dark-blue);
+  border: var(--rule) solid var(--line);
 }
 
 .seg button {
@@ -392,7 +399,7 @@ thead th,
   cursor: pointer;
 }
 
-.seg button + button { border-left: var(--rule) solid var(--dark-blue); }
+.seg button + button { border-left: var(--rule) solid var(--line); }
 .seg button:hover { background: var(--light-blue); }
 
 .seg button[aria-pressed="true"] {
@@ -408,14 +415,13 @@ thead th,
 
 .table-wrap { overflow-x: auto; }
 
-/* Separate borders keep the 1.5px grid intact under the sticky header row. */
+/* Horizontal rules only, in light blue. A full dark grid reads far too hard over
+   this much text, so the columns are separated by spacing instead of lines. */
 table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   min-width: 940px;
-  border-top: var(--rule) solid var(--dark-blue);
-  border-left: var(--rule) solid var(--dark-blue);
 }
 
 thead th {
@@ -423,10 +429,9 @@ thead th {
   top: 0;
   z-index: 1;
   text-align: left;
-  padding: 0.85rem 0.9rem;
+  padding: 0.8rem 1.1rem;
   background: var(--champagne);
-  border-right: var(--rule) solid var(--dark-blue);
-  border-bottom: var(--rule) solid var(--dark-blue);
+  border-bottom: var(--rule) solid var(--line);
   font-size: 0.72rem;
   letter-spacing: 0.07em;
   color: var(--dark-blue);
@@ -434,21 +439,20 @@ thead th {
 }
 
 th.sortable { cursor: pointer; user-select: none; }
-th.sortable:hover { background: var(--light-blue); }
+th.sortable:hover { color: var(--red-orange); }
 th .arrow { font-size: 0.7rem; margin-left: 0.25rem; opacity: 0.55; }
 th[aria-sort] .arrow { opacity: 1; }
 
 tbody td {
-  padding: 0.85rem 0.9rem;
-  border-right: var(--rule) solid var(--dark-blue);
-  border-bottom: var(--rule) solid var(--dark-blue);
-  vertical-align: middle;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
   font-size: 0.875rem;
 }
 
 tbody tr:not(.detail-row) { cursor: pointer; }
-tbody tr:hover > td { background: rgba(183, 215, 222, 0.45); }
-tbody tr.is-open > td { background: var(--light-blue); }
+tbody tr:hover > td { background: rgba(183, 215, 222, 0.28); }
+tbody tr.is-open > td { background: rgba(183, 215, 222, 0.5); }
 
 /* Name */
 .name-cell { width: 13rem; }
@@ -494,8 +498,8 @@ tbody tr.is-open > td { background: var(--light-blue); }
 
 .chip {
   display: inline-block;
-  padding: 0.12rem 0.45rem;
-  border: var(--rule) solid var(--dark-blue);
+  padding: 0.14rem 0.5rem;
+  border: 1px solid var(--line);
   font-size: 0.72rem;
   line-height: 1.4;
   color: var(--dark-blue);
@@ -503,9 +507,7 @@ tbody tr.is-open > td { background: var(--light-blue); }
 }
 
 .chip.general {
-  background: var(--dark-blue);
-  border-color: var(--dark-blue);
-  color: var(--champagne);
+  background: var(--light-blue);
   font-size: 0.68rem;
   letter-spacing: 0.04em;
 }
@@ -571,8 +573,8 @@ tbody tr.is-open > td { background: var(--light-blue); }
 
 /* Expanded detail row */
 tr.detail-row > td {
-  background: var(--light-blue);
-  padding: 1rem 1.25rem 1.25rem 2rem;
+  background: rgba(183, 215, 222, 0.5);
+  padding: 0.25rem 1.25rem 1.35rem 2.2rem;
 }
 
 .detail-grid {
