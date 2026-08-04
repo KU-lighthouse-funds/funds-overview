@@ -79,16 +79,64 @@ function kuUnitBadge(unit) {
   return escapeHtml(u);
 }
 
-/** Compact form for the table cell: campus names stand in for long addresses. */
+const LIGHTHOUSE_EMAIL = "lighthouse@ku.dk";
+const POC_EMAIL = "POC@adm.ku.dk";
+
+function lighthouseBadgeHtml() {
+  return `<a href="mailto:${LIGHTHOUSE_EMAIL}" class="ku-mail pill pill-lighthouse" title="${LIGHTHOUSE_EMAIL}">Lighthouse</a>`;
+}
+
+/** Compact KU line: Lighthouse pill → lighthouse@ku.dk; Preaward → campus links. */
 function kuSupportHtml(row) {
-  const parts = [kuUnitBadge(row["KU support unit"])];
+  const unit = (row["KU support unit"] || "").trim();
+  const parts = [];
+
+  if (/^lighthouse$/i.test(unit)) {
+    parts.push(lighthouseBadgeHtml());
+  } else {
+    parts.push(kuUnitBadge(unit));
+  }
+
   if (row["KU faculty focus"]) {
     parts.push(`<span class="ku-faculty">${escapeHtml(row["KU faculty focus"])}</span>`);
   }
-  const contacts = kuContacts(row);
-  const useLabel = contacts.length > 1;
-  contacts.forEach((c) => parts.push(mailLink(c, useLabel)));
+
+  if (/^pre-?award$/i.test(unit)) {
+    const contacts = kuContacts(row);
+    const useLabel = contacts.length > 1;
+    contacts.forEach((c) => parts.push(mailLink(c, useLabel)));
+  }
+
   return parts.join(" · ");
+}
+
+function whoToAskContent(row) {
+  const hint = (row["KU contact hint"] || "").trim();
+  const email = (row["KU contact email"] || "").trim().toLowerCase();
+  const unit = (row["KU support unit"] || "").trim();
+
+  if (/^lighthouse$/i.test(unit) && email === POC_EMAIL.toLowerCase()) {
+    return { kind: "poc" };
+  }
+
+  if (!hint || /^(ku lighthouse|preaward rso)\.?$/i.test(hint)) {
+    return null;
+  }
+
+  if (/^lighthouse$/i.test(unit) && /poc@adm\.ku\.dk/i.test(hint)) {
+    return { kind: "poc" };
+  }
+
+  return { kind: "hint", text: hint };
+}
+
+function whoToAskHtml(row) {
+  const content = whoToAskContent(row);
+  if (!content) return "";
+  if (content.kind === "poc") {
+    return mailLink({ label: "", address: POC_EMAIL }, false);
+  }
+  return escapeHtml(content.text);
 }
 
 function rowExtraHtml(row) {
@@ -96,9 +144,9 @@ function rowExtraHtml(row) {
   if (row.Deadline) {
     blocks.push(`<div><h4>Deadline</h4><p>${escapeHtml(row.Deadline)}</p></div>`);
   }
-  const hint = (row["KU contact hint"] || "").trim();
-  if (hint && !/^(ku lighthouse|preaward rso)\.?$/i.test(hint)) {
-    blocks.push(`<div><h4>Who to ask</h4><p>${escapeHtml(hint)}</p></div>`);
+  const who = whoToAskHtml(row);
+  if (who) {
+    blocks.push(`<div><h4>Who to ask</h4><p>${who}</p></div>`);
   }
   const funding = (row["Funding Amount"] || "").trim();
   const lead = isSignificantFunding(funding) ? funding : "";
@@ -150,11 +198,10 @@ function rowHtml(row, idx) {
     ? `<p class="ku-line">KU support: ${kuSupportHtml(row)}</p>`
     : "";
 
-  const hint = (row["KU contact hint"] || "").trim();
   const hasExtra =
     Boolean(row.Deadline) ||
     hasKuSupport(row) ||
-    (hint && !/^(ku lighthouse|preaward rso)\.?$/i.test(hint)) ||
+    Boolean(whoToAskContent(row)) ||
     (funding && !lead);
   const showMore = !open && (body.length > 90 || hasExtra);
 

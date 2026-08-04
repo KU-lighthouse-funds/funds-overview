@@ -594,6 +594,14 @@ tr.is-open .name-cell { width: 13rem; }
   background: var(--purple);
 }
 
+a.pill.pill-lighthouse {
+  text-decoration: none;
+}
+a.pill.pill-lighthouse:hover {
+  color: var(--dark-blue);
+  text-decoration: underline;
+}
+
 .pill-preaward {
   color: var(--champagne);
   background: var(--red-orange);
