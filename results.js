@@ -38,6 +38,18 @@ function segmentChips(row) {
     .join("")}</div>`;
 }
 
+function kuSupportHtml(row) {
+  const parts = [escapeHtml(row["KU support unit"])];
+  if (row["KU faculty focus"]) parts.push(escapeHtml(row["KU faculty focus"]));
+  const email = (row["KU contact email"] || "").trim();
+  if (email) {
+    parts.push(
+      `<a href="mailto:${escapeHtml(email)}" class="ku-mail">${escapeHtml(email)}</a>`
+    );
+  }
+  return parts.join(" · ");
+}
+
 function rowHtml(row, idx) {
   const id = String(idx);
   const open = state.expanded.has(id);
@@ -51,9 +63,7 @@ function rowHtml(row, idx) {
   const tags = cvrTags(row);
 
   const kuLine = hasKuSupport(row)
-    ? `<p class="ku-line"><span class="ku-dot"></span>KU: ${escapeHtml(
-        row["KU support unit"]
-      )}${row["KU faculty focus"] ? ` · ${escapeHtml(row["KU faculty focus"])}` : ""}</p>`
+    ? `<p class="ku-line"><span class="ku-dot"></span>KU support: ${kuSupportHtml(row)}</p>`
     : "";
 
   const main = `
@@ -97,16 +107,12 @@ function rowHtml(row, idx) {
     cells.push(`<div><h4>Deadline</h4><p>${escapeHtml(row.Deadline)}</p></div>`);
   }
   if (hasKuSupport(row)) {
-    cells.push(
-      `<div><h4>KU partner</h4><p>${escapeHtml(row["KU support unit"])}${
-        row["KU faculty focus"] ? ` · ${escapeHtml(row["KU faculty focus"])}` : ""
-      }</p></div>`
-    );
+    cells.push(`<div><h4>KU support</h4><p>${kuSupportHtml(row)}</p></div>`);
   }
-  if (row["KU contact hint"]) {
-    cells.push(
-      `<div><h4>Who to ask</h4><p>${escapeHtml(row["KU contact hint"])}</p></div>`
-    );
+  // Hints that only name the unit again add nothing next to the KU support cell.
+  const hint = (row["KU contact hint"] || "").trim();
+  if (hint && !/^(ku lighthouse|preaward rso)\.?$/i.test(hint)) {
+    cells.push(`<div><h4>Who to ask</h4><p>${escapeHtml(hint)}</p></div>`);
   }
   if (funding && !lead) {
     cells.push(`<div><h4>Funding</h4><p>${escapeHtml(funding)}</p></div>`);

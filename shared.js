@@ -102,6 +102,8 @@ export function filterProgrammes(programmes, filters) {
       row["Quick info"],
       row.Deadline,
       row["KU support unit"],
+      row["KU faculty focus"],
+      row["KU contact email"],
       row["KU contact hint"],
       row["PPT notes"],
     ]

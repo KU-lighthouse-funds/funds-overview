@@ -10,7 +10,7 @@ uppercase for headings and subheadings, regular for body copy.
 
 ## Data
 
-Built from `funds with KU support - v3.csv`. To refresh:
+Built from `funds with KU support - v4.csv`. To refresh:
 
 ```bash
 python sync_data.py

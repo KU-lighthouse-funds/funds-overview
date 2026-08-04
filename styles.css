@@ -548,6 +548,12 @@ tbody tr.is-open > td { background: var(--cream); }
   vertical-align: 1px;
 }
 
+.ku-line .ku-mail {
+  color: var(--accent);
+  text-decoration: none;
+}
+.ku-line .ku-mail:hover { text-decoration: underline; }
+
 .read-more {
   margin: 0.35rem 0 0;
   font-size: 0.72rem;

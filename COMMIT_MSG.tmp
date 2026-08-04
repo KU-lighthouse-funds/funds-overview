@@ -1,0 +1,12 @@
+Name the KU support contact instead of the faculty catch-all
+
+"Alle" said nothing useful about who a programme is for, so the faculty field now
+holds SCIENCE/SUND or nothing, and the row reads "KU support: <unit>" rather than
+the ambiguous "KU:".
+
+Adds a KU contact email column sourced from the preaward deck: lighthouse@ku.dk
+for Lighthouse-routed programmes, POC@adm.ku.dk for the two Proof of Concept
+funds where the deck names a specific inbox. Preaward's Research Funding Support
+is organised by campus rather than faculty, so those rows carry no address yet.
+
+Drops the "Who to ask" detail when it only repeats the unit name.

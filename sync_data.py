@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-SRC = ROOT.parent / "funds with KU support - v3.csv"
+SRC = ROOT.parent / "funds with KU support - v4.csv"
 OUT = ROOT / "data" / "programmes.json"
 
 def main() -> None:
