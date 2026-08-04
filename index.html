@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KU Lighthouse — Funding overview</title>
+  <meta name="description" content="Search grants, programmes and support for founders and researchers across Denmark, the Nordics and Europe." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-media" aria-hidden="true"></div>
+    <div class="hero-scrim" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <p class="brand">KU Lighthouse</p>
+      <h1>Search for funding opportunities for your project</h1>
+      <p class="lede">
+        Explore grants, programmes, and support curated for founders and researchers
+        across Denmark, the Nordics, and Europe.
+      </p>
+
+      <section class="filters" aria-label="Filters">
+        <div class="filter-block">
+          <h2>Where are you on your journey?</h2>
+          <p class="hint">Choose one or more stages</p>
+          <div id="stage-chips" class="chips" role="group" aria-label="Stages"></div>
+        </div>
+
+        <div class="filter-block">
+          <h2>Select your industry segment</h2>
+          <p class="hint">Choose one or more industry segments</p>
+          <div id="segment-chips" class="chips chips-wrap" role="group" aria-label="Industry segments"></div>
+        </div>
+
+        <div class="search-row">
+          <label class="sr-only" for="q">Search</label>
+          <input id="q" type="search" placeholder="Search name, keyword, funder…" autocomplete="off" />
+          <button id="search-btn" type="button" class="btn-search">Search</button>
+        </div>
+
+        <p class="match-count" id="match-count" aria-live="polite"></p>
+      </section>
+    </div>
+  </header>
+
+  <main class="results">
+    <div class="table-wrap">
+      <table id="results-table">
+        <thead>
+          <tr>
+            <th>Opportunity</th>
+            <th>Name</th>
+            <th>Stage</th>
+            <th>Geo</th>
+            <th>CVR</th>
+            <th>Info</th>
+          </tr>
+        </thead>
+        <tbody id="results-body"></tbody>
+      </table>
+    </div>
+    <p id="empty" class="empty hidden">No programmes match these filters. Try clearing a stage or segment.</p>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      Disclaimer: This data is assembled with the help of AI and may contain errors or be out of date.
+      Always verify details directly with the funding provider before applying.
+      Spotted an error or have feedback?
+      Please contact <a href="mailto:kly@adm.ku.dk">kly@adm.ku.dk</a>.
+    </p>
+  </footer>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
