@@ -42,12 +42,33 @@ Built from `funds with KU support - v4.csv`. To refresh:
 python sync_data.py
 ```
 
-## Local preview
+## Local preview (before pushing)
 
-Open `index.html` via a local static server (fetch needs http, not `file://`):
+Preview changes on your machine with **live reload** — save a file and the browser refreshes.
+
+From this folder:
+
+```powershell
+.\dev.ps1
+```
+
+Refresh data from the CSV first:
+
+```powershell
+.\dev.ps1 -Sync
+```
+
+Then open:
+
+- Landing: http://localhost:8080/
+- Results: http://localhost:8080/results.html
+
+Press **Ctrl+C** in the terminal to stop. When it looks right, commit and push as usual.
+
+Plain static server (no auto-reload):
 
 ```bash
 python -m http.server 8080
 ```
 
-Then visit http://localhost:8080
+Do not open `index.html` directly — `fetch` needs `http://`, not `file://`.
