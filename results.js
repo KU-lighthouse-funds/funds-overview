@@ -56,12 +56,8 @@ function rowHtml(row, idx) {
       )}${row["KU faculty focus"] ? ` · ${escapeHtml(row["KU faculty focus"])}` : ""}</p>`
     : "";
 
-  const rowClasses = [open ? "is-open" : "", idx % 2 === 1 ? "alt" : ""]
-    .filter(Boolean)
-    .join(" ");
-
   const main = `
-    <tr class="${rowClasses}">
+    <tr class="${open ? "is-open" : ""}">
       <td class="name-cell">
         <div class="name-row">
           <button type="button" class="caret" data-toggle="${id}"
@@ -209,5 +205,7 @@ async function init() {
 
 init().catch((err) => {
   console.error(err);
-  document.getElementById("result-count").textContent = "Could not load data.";
+  const el = document.getElementById("result-count");
+  el.classList.add("load-error");
+  el.textContent = "Could not load programme data. Please reload the page.";
 });

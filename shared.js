@@ -42,9 +42,18 @@ export function escapeHtml(s) {
 }
 
 export async function loadProgrammes() {
-  const res = await fetch("data/programmes.json");
-  if (!res.ok) throw new Error("Failed to load programmes.json");
-  return res.json();
+  // One retry: the first request can land while GitHub Pages is still swapping files.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const res = await fetch("data/programmes.json", { cache: "no-cache" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      if (attempt === 1) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    }
+  }
+  return [];
 }
 
 export function filtersFromUrl() {

@@ -77,6 +77,9 @@ async function init() {
 
 init().catch((err) => {
   console.error(err);
-  document.getElementById("match-count").textContent =
-    "Could not load programme data.";
+  const el = document.getElementById("match-count");
+  el.classList.add("load-error");
+  el.textContent = window.location.protocol === "file:"
+    ? "Open the site over http (or use the published link) — browsers block data files on file://."
+    : "Could not load programme data. Please reload the page.";
 });
