@@ -19,10 +19,10 @@ function cvrTags(row) {
   const atApplication = (row["CVR at application"] || "Any").trim();
   const atStart = (row["CVR at programme start"] || "Any").trim();
   const tags = [];
-  if (atApplication === "No") tags.push({ text: "Pre-company", cls: "" });
-  if (atApplication === "Yes") tags.push({ text: "CVR required", cls: "has" });
+  if (atApplication === "No") tags.push({ text: "Pre-company", cls: "pill-pre" });
+  if (atApplication === "Yes") tags.push({ text: "CVR required", cls: "pill-cvr" });
   if (atApplication !== "Yes" && atStart === "Yes") {
-    tags.push({ text: "CVR by start", cls: "has" });
+    tags.push({ text: "CVR by start", cls: "pill-cvr-soon" });
   }
   return tags;
 }
@@ -57,10 +57,23 @@ function mailLink(contact, useLabel) {
      title="${escapeHtml(contact.address)}">${escapeHtml(text)}</a>`;
 }
 
+function kuUnitBadge(unit) {
+  const u = (unit || "").trim();
+  if (/^lighthouse$/i.test(u)) {
+    return `<span class="pill pill-lighthouse">${escapeHtml(u)}</span>`;
+  }
+  if (/^pre-?award$/i.test(u)) {
+    return `<span class="pill pill-preaward">${escapeHtml(u)}</span>`;
+  }
+  return escapeHtml(u);
+}
+
 /** Compact form for the table cell: campus names stand in for long addresses. */
 function kuSupportHtml(row) {
-  const parts = [escapeHtml(row["KU support unit"])];
-  if (row["KU faculty focus"]) parts.push(escapeHtml(row["KU faculty focus"]));
+  const parts = [kuUnitBadge(row["KU support unit"])];
+  if (row["KU faculty focus"]) {
+    parts.push(`<span class="ku-faculty">${escapeHtml(row["KU faculty focus"])}</span>`);
+  }
   const contacts = kuContacts(row);
   const useLabel = contacts.length > 1;
   contacts.forEach((c) => parts.push(mailLink(c, useLabel)));
@@ -78,6 +91,32 @@ function kuContactBlock(row) {
       .join("")}</ul>`;
 }
 
+function rowExtraHtml(row) {
+  const blocks = [];
+  if (row.Deadline) {
+    blocks.push(`<div><h4>Deadline</h4><p>${escapeHtml(row.Deadline)}</p></div>`);
+  }
+  if (hasKuSupport(row)) {
+    const faculty = row["KU faculty focus"]
+      ? `<span class="ku-faculty"> · ${escapeHtml(row["KU faculty focus"])}</span>`
+      : "";
+    blocks.push(
+      `<div><h4>KU support</h4><p>${kuUnitBadge(row["KU support unit"])}${faculty}</p>${kuContactBlock(row)}</div>`
+    );
+  }
+  const hint = (row["KU contact hint"] || "").trim();
+  if (hint && !/^(ku lighthouse|preaward rso)\.?$/i.test(hint)) {
+    blocks.push(`<div><h4>Who to ask</h4><p>${escapeHtml(hint)}</p></div>`);
+  }
+  const funding = (row["Funding Amount"] || "").trim();
+  const lead = isSignificantFunding(funding) ? funding : "";
+  if (funding && !lead) {
+    blocks.push(`<div><h4>Funding</h4><p>${escapeHtml(funding)}</p></div>`);
+  }
+  if (!blocks.length) return "";
+  return `<div class="row-extra"><div class="row-extra-grid">${blocks.join("")}</div></div>`;
+}
+
 function rowHtml(row, idx) {
   const id = String(idx);
   const open = state.expanded.has(id);
@@ -91,15 +130,15 @@ function rowHtml(row, idx) {
   const tags = cvrTags(row);
 
   const kuLine = hasKuSupport(row)
-    ? `<p class="ku-line"><span class="ku-dot"></span>KU support: ${kuSupportHtml(row)}</p>`
+    ? `<p class="ku-line">KU support: ${kuSupportHtml(row)}</p>`
     : "";
 
-  const main = `
+  return `
     <tr class="${open ? "is-open" : ""}">
       <td class="name-cell">
         <div class="name-row">
           <button type="button" class="caret" data-toggle="${id}"
-                  aria-expanded="${open}" aria-label="Toggle details">▶</button>
+                  aria-expanded="${open}" aria-label="${open ? "Collapse" : "Expand"} details">▶</button>
           <span>${
             row.Link
               ? `<a href="${escapeHtml(row.Link)}" target="_blank" rel="noopener">${escapeHtml(row.Name)}</a>`
@@ -107,9 +146,9 @@ function rowHtml(row, idx) {
           }</span>
         </div>
         <p class="name-sub">
-          ${geo ? `<span>${escapeHtml(geo)}</span>` : ""}
+          ${geo ? `<span class="geo">${escapeHtml(geo)}</span>` : ""}
           ${tags
-            .map((t) => `<span class="cvr-tag ${t.cls}">${escapeHtml(t.text)}</span>`)
+            .map((t) => `<span class="pill ${t.cls}">${escapeHtml(t.text)}</span>`)
             .join("")}
         </p>
       </td>
@@ -117,47 +156,16 @@ function rowHtml(row, idx) {
       <td>${segmentChips(row)}</td>
       <td class="criteria-cell">
         <span class="${open ? "" : "clamped"}">${escapeHtml(row.Criteria || "—")}</span>
-        ${open ? "" : `<p class="read-more">Click to read more</p>`}
+        ${open ? "" : `<p class="read-more">Show more</p>`}
       </td>
       <td class="stage-cell">${escapeHtml(row.Stage || "")}</td>
       <td class="info-cell">
         ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
         <p class="info-text ${open ? "" : "clamped"}">${escapeHtml(body)}</p>
-        ${kuLine}
+        ${open ? rowExtraHtml(row) : kuLine}
       </td>
     </tr>
   `;
-
-  if (!open) return main;
-
-  const cells = [];
-  if (row.Deadline) {
-    cells.push(`<div><h4>Deadline</h4><p>${escapeHtml(row.Deadline)}</p></div>`);
-  }
-  if (hasKuSupport(row)) {
-    const unit = escapeHtml(row["KU support unit"]);
-    const faculty = row["KU faculty focus"]
-      ? ` · ${escapeHtml(row["KU faculty focus"])}`
-      : "";
-    cells.push(
-      `<div><h4>KU support</h4><p>${unit}${faculty}</p>${kuContactBlock(row)}</div>`
-    );
-  }
-  // Hints that only name the unit again add nothing next to the KU support cell.
-  const hint = (row["KU contact hint"] || "").trim();
-  if (hint && !/^(ku lighthouse|preaward rso)\.?$/i.test(hint)) {
-    cells.push(`<div><h4>Who to ask</h4><p>${escapeHtml(hint)}</p></div>`);
-  }
-  if (funding && !lead) {
-    cells.push(`<div><h4>Funding</h4><p>${escapeHtml(funding)}</p></div>`);
-  }
-
-  return `${main}
-    <tr class="detail-row">
-      <td colspan="6">
-        <div class="detail-grid">${cells.join("")}</div>
-      </td>
-    </tr>`;
 }
 
 function sorted(rows) {
@@ -201,7 +209,7 @@ function paint() {
     });
   });
 
-  body.querySelectorAll("tr:not(.detail-row)").forEach((tr) => {
+  body.querySelectorAll("tbody tr").forEach((tr) => {
     tr.addEventListener("click", (event) => {
       if (event.target.closest("a")) return;
       const btn = tr.querySelector("[data-toggle]");

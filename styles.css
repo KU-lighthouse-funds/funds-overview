@@ -263,13 +263,14 @@ thead th,
   cursor: pointer;
 }
 
-.ms-toggle:hover,
-.ms-toggle[aria-expanded="true"] { background: var(--light-blue); }
+.ms-toggle:hover { background: rgba(183, 215, 222, 0.45); }
+.ms-toggle[aria-expanded="true"] {
+  background: var(--champagne);
+  border-color: var(--dark-blue);
+}
 
 .ms-chev { flex: none; width: 0.85rem; height: 0.85rem; }
 
-/* Solid light blue rather than an outlined champagne panel: the guide asks for
-   solid or outlined, not both, and a floating menu needs to read as separate. */
 .ms-panel {
   position: absolute;
   left: 0;
@@ -278,7 +279,8 @@ thead th,
   z-index: 30;
   max-height: 19rem;
   overflow-y: auto;
-  background: var(--light-blue);
+  background: var(--champagne);
+  border: var(--rule) solid var(--line);
   padding: 0.35rem;
 }
 
@@ -296,7 +298,7 @@ thead th,
   cursor: pointer;
 }
 
-.ms-option:hover { background: var(--champagne); }
+.ms-option:hover { background: rgba(183, 215, 222, 0.55); }
 
 .ms-check {
   flex: none;
@@ -450,7 +452,7 @@ tbody td {
   font-size: 0.875rem;
 }
 
-tbody tr:not(.detail-row) { cursor: pointer; }
+tbody tr { cursor: pointer; }
 tbody tr:hover > td { background: rgba(183, 215, 222, 0.28); }
 tbody tr.is-open > td { background: rgba(183, 215, 222, 0.5); }
 
@@ -487,10 +489,52 @@ tbody tr.is-open > td { background: rgba(183, 215, 222, 0.5); }
   margin: 0.3rem 0 0 1.1rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem 0.5rem;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
   font-size: 0.68rem;
   letter-spacing: 0.06em;
+}
+
+.name-sub .geo {
   color: var(--dark-grey);
+  text-transform: uppercase;
+}
+
+/* Small coloured hints — Pre-company, CVR, KU unit, etc. */
+.pill {
+  display: inline-block;
+  padding: 0.12rem 0.42rem;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pill-pre {
+  color: var(--red-orange);
+  background: rgba(219, 59, 10, 0.1);
+}
+
+.pill-cvr {
+  color: var(--ku-red);
+  background: rgba(144, 26, 30, 0.08);
+}
+
+.pill-cvr-soon {
+  color: var(--dark-blue);
+  background: rgba(183, 215, 222, 0.65);
+}
+
+.pill-lighthouse {
+  color: var(--dark-blue);
+  background: var(--purple);
+}
+
+.pill-preaward {
+  color: var(--champagne);
+  background: var(--red-orange);
 }
 
 /* Segment chips */
@@ -545,54 +589,55 @@ tbody tr.is-open > td { background: rgba(183, 215, 222, 0.5); }
 }
 
 .ku-line {
-  margin: 0.5rem 0 0;
+  margin: 0.55rem 0 0;
   font-size: 0.78rem;
-  line-height: 1.4;
+  line-height: 1.5;
   color: var(--dark-blue);
 }
 
-/* Purple is the KU Lighthouse marker in the guide, used only here. */
-.ku-line .ku-dot {
-  display: inline-block;
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-right: 0.4rem;
-  border-radius: 50%;
-  background: var(--purple);
-  vertical-align: 1px;
+.ku-line .pill { vertical-align: 0.05em; }
+
+.ku-faculty {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--dark-grey);
 }
 
-.ku-mail { color: var(--dark-blue); }
-.ku-mail:hover { text-decoration: none; }
+.ku-mail { color: var(--dark-blue); text-decoration: underline; }
+.ku-mail:hover { color: var(--red-orange); }
 
 .read-more {
   margin: 0.35rem 0 0;
   font-size: 0.74rem;
+  color: var(--red-orange);
+}
+
+/* Extra fields sit inside the open row — no second table row dropping below. */
+.row-extra {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+}
+
+.row-extra-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.75rem 1.5rem;
+}
+
+.row-extra-grid h4 {
+  margin: 0 0 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--dark-grey);
 }
 
-/* Expanded detail row */
-tr.detail-row > td {
-  background: rgba(183, 215, 222, 0.5);
-  padding: 0.25rem 1.25rem 1.35rem 2.2rem;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  gap: 0.85rem 2rem;
-}
-
-.detail-grid h4 {
-  margin: 0 0 0.25rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.09em;
-  color: var(--dark-blue);
-}
-
-.detail-grid p {
+.row-extra-grid p {
   margin: 0;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   line-height: 1.45;
   color: var(--dark-blue);
 }
