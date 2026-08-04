@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Results — KU Lighthouse funding</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Instrument+Serif&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-results">
+  <header class="results-bar">
+    <div class="results-bar-inner">
+      <a class="back" href="index.html">← New search</a>
+      <div>
+        <p class="brand-inline">KU Lighthouse</p>
+        <h1>Matching opportunities</h1>
+        <p class="match-line" id="match-count">Loading…</p>
+        <p class="filter-summary" id="filter-summary"></p>
+      </div>
+    </div>
+  </header>
+
+  <main class="results-main">
+    <div class="table-wrap">
+      <table id="results-table">
+        <thead>
+          <tr>
+            <th>Opportunity</th>
+            <th>Name</th>
+            <th>Stage</th>
+            <th>Geo</th>
+            <th>CVR</th>
+            <th>Info</th>
+          </tr>
+        </thead>
+        <tbody id="results-body"></tbody>
+      </table>
+    </div>
+    <p id="empty" class="empty hidden">No programmes match. <a href="index.html">Try a new search</a>.</p>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      Disclaimer: This data is assembled with the help of AI and may contain errors or be out of date.
+      Always verify details directly with the funding provider before applying.
+      Feedback: <a href="mailto:kly@adm.ku.dk">kly@adm.ku.dk</a>.
+    </p>
+  </footer>
+
+  <script src="results.js" type="module"></script>
+</body>
+</html>

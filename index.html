@@ -4,14 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KU Lighthouse — Funding overview</title>
-  <meta name="description" content="Search grants, programmes and support for founders and researchers across Denmark, the Nordics and Europe." />
+  <meta name="description" content="Search grants, programmes and support for founders and researchers." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Instrument+Serif&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <header class="hero">
+<body class="page-landing">
+  <header class="hero hero-full">
     <div class="hero-media" aria-hidden="true"></div>
     <div class="hero-scrim" aria-hidden="true"></div>
     <div class="hero-inner">
@@ -22,58 +22,42 @@
         across Denmark, the Nordics, and Europe.
       </p>
 
-      <section class="filters" aria-label="Filters">
+      <form class="filters" id="search-form" action="results.html" method="get">
         <div class="filter-block">
-          <h2>Where are you on your journey?</h2>
-          <p class="hint">Choose one or more stages</p>
-          <div id="stage-chips" class="chips" role="group" aria-label="Stages"></div>
+          <label class="field-label" for="stage">Where are you on your journey?</label>
+          <p class="hint">Select one or more stages</p>
+          <select id="stage" name="stage" multiple size="5" class="multi">
+            <option value="Exploratory innovation">Exploratory innovation</option>
+            <option value="PoC">PoC</option>
+            <option value="Early venture">Early venture</option>
+            <option value="Growth/scale">Growth/scale</option>
+            <option value="All stages">All stages</option>
+          </select>
         </div>
 
         <div class="filter-block">
-          <h2>Select your industry segment</h2>
-          <p class="hint">Choose one or more industry segments</p>
-          <div id="segment-chips" class="chips chips-wrap" role="group" aria-label="Industry segments"></div>
+          <label class="field-label" for="segment">Industry segment</label>
+          <p class="hint">Select one or more segments</p>
+          <select id="segment" name="segment" multiple size="8" class="multi"></select>
         </div>
 
-        <div class="search-row">
-          <label class="sr-only" for="q">Search</label>
-          <input id="q" type="search" placeholder="Search name, keyword, funder…" autocomplete="off" />
-          <button id="search-btn" type="button" class="btn-search">Search</button>
+        <div class="filter-block">
+          <label class="field-label" for="q">Keyword (optional)</label>
+          <input id="q" name="q" type="search" placeholder="Name, funder, keyword…" autocomplete="off" />
         </div>
 
-        <p class="match-count" id="match-count" aria-live="polite"></p>
-      </section>
+        <p class="match-count" id="match-count" aria-live="polite">Loading programmes…</p>
+
+        <button type="submit" class="btn-search">Search</button>
+      </form>
+
+      <p class="disclaimer-inline">
+        Data may contain errors — always verify with the provider.
+        Feedback: <a href="mailto:kly@adm.ku.dk">kly@adm.ku.dk</a>
+      </p>
     </div>
   </header>
 
-  <main class="results">
-    <div class="table-wrap">
-      <table id="results-table">
-        <thead>
-          <tr>
-            <th>Opportunity</th>
-            <th>Name</th>
-            <th>Stage</th>
-            <th>Geo</th>
-            <th>CVR</th>
-            <th>Info</th>
-          </tr>
-        </thead>
-        <tbody id="results-body"></tbody>
-      </table>
-    </div>
-    <p id="empty" class="empty hidden">No programmes match these filters. Try clearing a stage or segment.</p>
-  </main>
-
-  <footer class="site-footer">
-    <p>
-      Disclaimer: This data is assembled with the help of AI and may contain errors or be out of date.
-      Always verify details directly with the funding provider before applying.
-      Spotted an error or have feedback?
-      Please contact <a href="mailto:kly@adm.ku.dk">kly@adm.ku.dk</a>.
-    </p>
-  </footer>
-
-  <script src="app.js" type="module"></script>
+  <script src="landing.js" type="module"></script>
 </body>
 </html>
