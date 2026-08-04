@@ -91,91 +91,23 @@ function kuSupportHtml(row) {
   return parts.join(" · ");
 }
 
-/** Campus contacts: label text links to the address (works the same in Outlook either way). */
-function kuContactBlock(row) {
-  const contacts = kuContacts(row);
-  if (!contacts.length) return "";
-  if (contacts.length === 1) return `<p>${mailLink(contacts[0], false)}</p>`;
-  return `<p>Research Funding Support, by campus:</p>
-    <ul class="ku-campus">${contacts
-      .map((c) => `<li>${mailLink(c, true)}</li>`)
-      .join("")}</ul>`;
-}
-
-/** Full-width panel when a row is expanded. */
-function expandPanelHtml(row, id) {
-  const funding = (row["Funding Amount"] || "").trim();
-  const quick = dedupeCopy(row["Quick info"] || "");
-  const criteria = dedupeCopy(row.Criteria || "");
-  const lead = isSignificantFunding(funding) ? funding : "";
-  const body = quick || (lead ? "" : funding || "—");
-
-  const geo = (row.Geography || "").trim();
-  const tags = cvrTags(row);
-
-  const hint = (row["KU contact hint"] || "").trim();
-  const showWho = hint && !/^(ku lighthouse|preaward rso)\.?$/i.test(hint);
-
-  const meta = [];
+function rowExtraHtml(row) {
+  const blocks = [];
   if (row.Deadline) {
-    meta.push(`<div><h4>Deadline</h4><p>${escapeHtml(row.Deadline)}</p></div>`);
+    blocks.push(`<div><h4>Deadline</h4><p>${escapeHtml(row.Deadline)}</p></div>`);
   }
-  if (hasKuSupport(row)) {
-    const faculty = row["KU faculty focus"]
-      ? `<span class="ku-faculty"> · ${escapeHtml(row["KU faculty focus"])}</span>`
-      : "";
-    meta.push(
-      `<div><h4>KU support</h4><p>${kuUnitBadge(row["KU support unit"])}${faculty}</p>${kuContactBlock(row)}</div>`
-    );
+  const hint = (row["KU contact hint"] || "").trim();
+  if (hint && !/^(ku lighthouse|preaward rso)\.?$/i.test(hint)) {
+    blocks.push(`<div><h4>Who to ask</h4><p>${escapeHtml(hint)}</p></div>`);
   }
-  if (showWho) {
-    meta.push(`<div><h4>Who to ask</h4><p>${escapeHtml(hint)}</p></div>`);
-  }
+  const funding = (row["Funding Amount"] || "").trim();
+  const lead = isSignificantFunding(funding) ? funding : "";
   if (funding && !lead) {
-    meta.push(`<div><h4>Funding</h4><p>${escapeHtml(funding)}</p></div>`);
+    blocks.push(`<div><h4>Funding</h4><p>${escapeHtml(funding)}</p></div>`);
   }
-
-  const nameHtml = row.Link
-    ? `<a href="${escapeHtml(row.Link)}" target="_blank" rel="noopener">${escapeHtml(row.Name)}</a>`
-    : escapeHtml(row.Name);
-
-  return `
-    <div class="expand-panel">
-      <div class="expand-head">
-        <div class="expand-title">
-          <button type="button" class="caret" data-toggle="${id}"
-                  aria-expanded="true" aria-label="Collapse details">▶</button>
-          <div>
-            <p class="expand-name">${nameHtml}</p>
-            <p class="name-sub">
-              ${geo ? `<span class="geo">${escapeHtml(geo)}</span>` : ""}
-              ${tags.map((t) => `<span class="pill ${t.cls}">${escapeHtml(t.text)}</span>`).join("")}
-            </p>
-          </div>
-        </div>
-        <div class="expand-head-meta">
-          <span class="expand-opp">${escapeHtml(row.Opportunity || "")}</span>
-          ${segmentChips(row)}
-          <span class="expand-stage">${stageCell(row)}</span>
-        </div>
-      </div>
-      <div class="expand-main">
-        <section>
-          <h4>Criteria</h4>
-          <p>${escapeHtml(criteria || "—")}</p>
-        </section>
-        <section>
-          <h4>Info</h4>
-          ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
-          <p>${escapeHtml(body)}</p>
-        </section>
-      </div>
-      ${
-        meta.length
-          ? `<div class="expand-meta cols-${Math.min(meta.length, 3)}">${meta.join("")}</div>`
-          : ""
-      }
-    </div>`;
+  if (!blocks.length) return "";
+  const cols = Math.min(blocks.length, 3);
+  return `<div class="row-extra"><div class="row-extra-grid cols-${cols}">${blocks.join("")}</div></div>`;
 }
 
 function rowHtml(row, idx) {
@@ -201,18 +133,14 @@ function rowHtml(row, idx) {
     hasKuSupport(row) ||
     (hint && !/^(ku lighthouse|preaward rso)\.?$/i.test(hint)) ||
     (funding && !lead);
-  const showMore = body.length > 90 || hasExtra;
-
-  if (open) {
-    return `<tr class="is-open" data-row="${id}"><td colspan="6">${expandPanelHtml(row, id)}</td></tr>`;
-  }
+  const showMore = !open && (body.length > 90 || hasExtra);
 
   return `
-    <tr data-row="${id}">
+    <tr class="${open ? "is-open" : ""}" data-row="${id}">
       <td class="name-cell">
         <div class="name-row">
           <button type="button" class="caret" data-toggle="${id}"
-                  aria-expanded="false" aria-label="Expand details">▶</button>
+                  aria-expanded="${open}" aria-label="${open ? "Collapse" : "Expand"} details">▶</button>
           <span>${
             row.Link
               ? `<a href="${escapeHtml(row.Link)}" target="_blank" rel="noopener">${escapeHtml(row.Name)}</a>`
@@ -226,13 +154,14 @@ function rowHtml(row, idx) {
             .join("")}
         </p>
       </td>
-      <td>${escapeHtml(row.Opportunity || "")}</td>
-      <td>${segmentChips(row)}</td>
+      <td class="opportunity-cell">${escapeHtml(row.Opportunity || "")}</td>
+      <td class="segment-cell">${segmentChips(row)}</td>
       <td class="criteria-cell">${escapeHtml(criteria || "—")}</td>
       <td class="stage-cell">${stageCell(row)}</td>
       <td class="info-cell">
         ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
-        <p class="info-text clamped">${escapeHtml(body)}</p>
+        <p class="info-text ${open ? "" : "clamped"}">${escapeHtml(body)}</p>
+        ${open ? rowExtraHtml(row) : ""}
         ${kuLine}
         ${showMore ? `<p class="read-more">Show more</p>` : ""}
       </td>
