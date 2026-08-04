@@ -179,19 +179,28 @@ function rowHtml(row, idx) {
       </td>
       ${
         open
-          ? `<td class="meta-stack-cell" colspan="4">${metaStackHtml(row, criteria)}</td>`
+          ? `<td class="expand-split-cell" colspan="5">
+        <div class="expand-split">
+          <div class="expand-stack">${metaStackHtml(row, criteria)}</div>
+          <div class="expand-info">
+            ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
+            <p class="info-text">${escapeHtml(body)}</p>
+            ${rowExtraHtml(row)}
+            ${kuLine}
+          </div>
+        </div>
+      </td>`
           : `<td class="opportunity-cell">${escapeHtml(row.Opportunity || "")}</td>
       <td class="segment-cell">${segmentChips(row)}</td>
       <td class="criteria-cell">${escapeHtml(criteria || "—")}</td>
-      <td class="stage-cell">${stageCell(row)}</td>`
-      }
+      <td class="stage-cell">${stageCell(row)}</td>
       <td class="info-cell">
         ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
-        <p class="info-text ${open ? "" : "clamped"}">${escapeHtml(body)}</p>
-        ${open ? rowExtraHtml(row) : ""}
+        <p class="info-text clamped">${escapeHtml(body)}</p>
         ${kuLine}
         ${showMore ? `<p class="read-more">Show more</p>` : ""}
-      </td>
+      </td>`
+      }
     </tr>
   `;
 }
