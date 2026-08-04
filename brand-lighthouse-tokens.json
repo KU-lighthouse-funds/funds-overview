@@ -1,0 +1,49 @@
+{
+  "source": "brand directions.pptx — KU INNO Design Guide (June 2026), slide 7 + Lighthouse slide master",
+  "supersedes": "Do not use the 2023 KU Lighthouse manual (green/orange palette). All pitch outputs follow this file.",
+  "font_family": "Open Sans",
+  "line_spacing_multiple": 1.2,
+  "colors": {
+    "purple_primary": "#C6C5FF",
+    "dark_blue": "#122947",
+    "red_orange": "#DB3B0A",
+    "light_blue": "#B7D7DE",
+    "champagne": "#FEFAF2",
+    "ku_red": "#901A1E",
+    "dark_grey": "#3D3D3D",
+    "white": "#FFFFFF"
+  },
+  "usage": {
+    "purple_primary": "KU Lighthouse signature — slide backgrounds, title slides, panels (slide 7)",
+    "dark_blue": "Default text on purple, champagne, and light blue",
+    "red_orange": "Accent — KPI numbers, emphasis slides, amplifier wave lettering",
+    "light_blue": "Amplifier wave stroke, chart fills, graphics on purple/champagne",
+    "champagne": "Default light deck background where not purple",
+    "white": "Panels and slide bodies on deliverable exports"
+  },
+  "combinations": [
+    { "background": "purple_primary", "text": "dark_blue", "graphics": "light_blue", "logo": "ku_color" },
+    { "background": "white", "text": "dark_blue", "graphics": "light_blue", "logo": "ku_color" },
+    { "background": "champagne", "text": "dark_blue", "graphics": "light_blue", "logo": "ku_color" },
+    { "background": "red_orange", "text": "white", "graphics": "white", "logo": "white" },
+    { "background": "dark_blue", "text": "champagne", "graphics": "white", "logo": "white" }
+  ],
+  "shapes": {
+    "corners": "square (no rounded)",
+    "shadow": false,
+    "outline_weight_pt": 1.5
+  },
+  "powerpoint_theme": "Dark Blue on Purple — Lighthouse layouts in brand directions.pptx",
+  "graphic_element": {
+    "name": "amplifier_wave",
+    "aliases": ["signal_wave"],
+    "files": {
+      "purple": "assets/lighthouse/amplifier_wave_purple.svg",
+      "light_blue": "assets/lighthouse/amplifier_wave_light_blue.svg",
+      "red_orange": "assets/lighthouse/amplifier_wave_red_orange.svg",
+      "white": "assets/lighthouse/amplifier_wave_white.svg",
+      "with_lettering": "assets/icons/signal_wave_orange.svg"
+    },
+    "orientation": ["horizontal", "vertical (rotate -90deg)"]
+  }
+}

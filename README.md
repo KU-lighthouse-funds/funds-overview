@@ -2,7 +2,9 @@
 
 Public searchable overview of grants and programmes for founders and researchers.
 
-**Live site (after Pages is enabled):** https://ku-lighthouse-funds.github.io/funds-overview/
+**Live site:** https://ku-lighthouse-funds.github.io/funds-overview/
+
+Visual identity follows **KU Lighthouse** tokens from the Pitch `brand directions.pptx` guide (June 2026): purple `#C6C5FF`, dark blue, red-orange accent, Open Sans — see `brand-lighthouse-tokens.json`.
 
 ## Data
 
