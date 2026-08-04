@@ -38,16 +38,44 @@ function segmentChips(row) {
     .join("")}</div>`;
 }
 
+/** "a@ku.dk" or "Nørre: a@ku.dk | Søndre: b@ku.dk" -> [{ label, address }]. */
+function kuContacts(row) {
+  return (row["KU contact email"] || "")
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const at = part.lastIndexOf(":");
+      if (at === -1) return { label: "", address: part };
+      return { label: part.slice(0, at).trim(), address: part.slice(at + 1).trim() };
+    });
+}
+
+function mailLink(contact, useLabel) {
+  const text = useLabel && contact.label ? contact.label : contact.address;
+  return `<a href="mailto:${escapeHtml(contact.address)}" class="ku-mail"
+     title="${escapeHtml(contact.address)}">${escapeHtml(text)}</a>`;
+}
+
+/** Compact form for the table cell: campus names stand in for long addresses. */
 function kuSupportHtml(row) {
   const parts = [escapeHtml(row["KU support unit"])];
   if (row["KU faculty focus"]) parts.push(escapeHtml(row["KU faculty focus"]));
-  const email = (row["KU contact email"] || "").trim();
-  if (email) {
-    parts.push(
-      `<a href="mailto:${escapeHtml(email)}" class="ku-mail">${escapeHtml(email)}</a>`
-    );
-  }
+  const contacts = kuContacts(row);
+  const useLabel = contacts.length > 1;
+  contacts.forEach((c) => parts.push(mailLink(c, useLabel)));
   return parts.join(" · ");
+}
+
+/** Expanded form: every address written out in full. */
+function kuContactBlock(row) {
+  const contacts = kuContacts(row);
+  if (!contacts.length) return "";
+  if (contacts.length === 1) return `<p>${mailLink(contacts[0], false)}</p>`;
+  return `<p>Research Funding Support, by campus:</p>
+    <ul class="ku-campus">${contacts
+      .map((c) => `<li>${escapeHtml(c.label)} — ${mailLink(c, false)}</li>`)
+      .join("")}</ul>`;
 }
 
 function rowHtml(row, idx) {
@@ -107,7 +135,13 @@ function rowHtml(row, idx) {
     cells.push(`<div><h4>Deadline</h4><p>${escapeHtml(row.Deadline)}</p></div>`);
   }
   if (hasKuSupport(row)) {
-    cells.push(`<div><h4>KU support</h4><p>${kuSupportHtml(row)}</p></div>`);
+    const unit = escapeHtml(row["KU support unit"]);
+    const faculty = row["KU faculty focus"]
+      ? ` · ${escapeHtml(row["KU faculty focus"])}`
+      : "";
+    cells.push(
+      `<div><h4>KU support</h4><p>${unit}${faculty}</p>${kuContactBlock(row)}</div>`
+    );
   }
   // Hints that only name the unit again add nothing next to the KU support cell.
   const hint = (row["KU contact hint"] || "").trim();

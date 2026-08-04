@@ -548,11 +548,18 @@ tbody tr.is-open > td { background: var(--cream); }
   vertical-align: 1px;
 }
 
-.ku-line .ku-mail {
+.ku-mail {
   color: var(--accent);
   text-decoration: none;
 }
-.ku-line .ku-mail:hover { text-decoration: underline; }
+.ku-mail:hover { text-decoration: underline; }
+
+.ku-campus {
+  margin: 0.2rem 0 0;
+  padding-left: 1rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
 
 .read-more {
   margin: 0.35rem 0 0;
