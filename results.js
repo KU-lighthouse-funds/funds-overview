@@ -82,26 +82,18 @@ function kuUnitBadge(unit) {
 const LIGHTHOUSE_EMAIL = "lighthouse@ku.dk";
 const POC_EMAIL = "POC@adm.ku.dk";
 
-function lighthouseBadgeHtml() {
-  return `<a href="mailto:${LIGHTHOUSE_EMAIL}" class="ku-mail pill pill-lighthouse" title="${LIGHTHOUSE_EMAIL}">Lighthouse</a>`;
-}
-
-/** Compact KU line: Lighthouse pill → lighthouse@ku.dk; Preaward → campus links. */
+/** Compact KU line: unit badge, then · linked address(es) — same pattern for Lighthouse and Preaward. */
 function kuSupportHtml(row) {
   const unit = (row["KU support unit"] || "").trim();
-  const parts = [];
-
-  if (/^lighthouse$/i.test(unit)) {
-    parts.push(lighthouseBadgeHtml());
-  } else {
-    parts.push(kuUnitBadge(unit));
-  }
+  const parts = [kuUnitBadge(unit)];
 
   if (row["KU faculty focus"]) {
     parts.push(`<span class="ku-faculty">${escapeHtml(row["KU faculty focus"])}</span>`);
   }
 
-  if (/^pre-?award$/i.test(unit)) {
+  if (/^lighthouse$/i.test(unit)) {
+    parts.push(mailLink({ label: "", address: LIGHTHOUSE_EMAIL }, false));
+  } else if (/^pre-?award$/i.test(unit)) {
     const contacts = kuContacts(row);
     const useLabel = contacts.length > 1;
     contacts.forEach((c) => parts.push(mailLink(c, useLabel)));
