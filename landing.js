@@ -22,11 +22,6 @@ const STAGE_OPTIONS = [
     label: "Growth/scale",
     desc: "Post-seed scale-up — growth funding, pilots at scale, expansion",
   },
-  {
-    value: "All stages",
-    label: "All stages",
-    desc: "Not a step on the ladder — programmes and events open across the journey",
-  },
 ];
 
 async function init() {

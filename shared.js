@@ -71,7 +71,11 @@ export function filterProgrammes(programmes, filters) {
   const cvr = filters.cvr || "all";
 
   return programmes.filter((row) => {
-    if (filters.stages?.length && !filters.stages.includes(row.Stage)) return false;
+    if (filters.stages?.length) {
+      // Programmes that span the whole journey stay visible whichever stage is picked.
+      const spansAllStages = row.Stage === "All stages";
+      if (!spansAllStages && !filters.stages.includes(row.Stage)) return false;
+    }
 
     if (filters.segments?.length) {
       const segs = parseSegments(row);

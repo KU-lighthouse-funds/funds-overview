@@ -122,11 +122,19 @@ function rowHtml(row, idx) {
 
 function sorted(rows) {
   const { key, dir } = state.sort;
-  if (!key) return rows;
-  return [...rows].sort((a, b) =>
-    String(a[key] || "").localeCompare(String(b[key] || ""), "en", {
-      sensitivity: "base",
-    }) * dir
+  if (key) {
+    return [...rows].sort((a, b) =>
+      String(a[key] || "").localeCompare(String(b[key] || ""), "en", {
+        sensitivity: "base",
+      }) * dir
+    );
+  }
+  // Unsorted view: show the stages actually asked for before the always-on
+  // "All stages" entries, so those don't bury the real matches.
+  const picked = state.filters.stages || [];
+  if (!picked.length) return rows;
+  return [...rows].sort(
+    (a, b) => Number(picked.includes(b.Stage)) - Number(picked.includes(a.Stage))
   );
 }
 

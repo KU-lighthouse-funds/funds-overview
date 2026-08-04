@@ -4,11 +4,13 @@ Public searchable overview of grants and programmes for founders and researchers
 
 **Live site:** https://ku-lighthouse-funds.github.io/funds-overview/
 
-Layout and palette follow the original Lovable app: neutral greyscale on white, Open Sans throughout.
+Layout follows the original Lovable app. Colour is KU Lighthouse applied softly — cream surfaces,
+dark blue text, red-orange actions, purple reserved for the KU marker. Type is Open Sans: semibold
+uppercase for headings and subheadings, regular for body copy.
 
 ## Data
 
-Built from `funds with KU support - v2.csv`. To refresh:
+Built from `funds with KU support - v3.csv`. To refresh:
 
 ```bash
 python sync_data.py
