@@ -110,6 +110,29 @@ function rowExtraHtml(row) {
   return `<div class="row-extra"><div class="row-extra-grid cols-${cols}">${blocks.join("")}</div></div>`;
 }
 
+function metaStackHtml(row, criteria) {
+  const segments = segmentChips(row);
+  return `
+    <div class="meta-stack">
+      <div class="meta-stack-item">
+        <span class="meta-stack-label">Opportunity</span>
+        <span>${escapeHtml(row.Opportunity || "—")}</span>
+      </div>
+      <div class="meta-stack-item">
+        <span class="meta-stack-label">Industry segment</span>
+        ${segments || "<span>—</span>"}
+      </div>
+      <div class="meta-stack-item">
+        <span class="meta-stack-label">Stage</span>
+        <span>${stageCell(row)}</span>
+      </div>
+      <div class="meta-stack-item">
+        <span class="meta-stack-label">Criteria</span>
+        <span>${escapeHtml(criteria || "—")}</span>
+      </div>
+    </div>`;
+}
+
 function rowHtml(row, idx) {
   const id = String(idx);
   const open = state.expanded.has(id);
@@ -154,10 +177,14 @@ function rowHtml(row, idx) {
             .join("")}
         </p>
       </td>
-      <td class="opportunity-cell">${escapeHtml(row.Opportunity || "")}</td>
+      ${
+        open
+          ? `<td class="meta-stack-cell" colspan="4">${metaStackHtml(row, criteria)}</td>`
+          : `<td class="opportunity-cell">${escapeHtml(row.Opportunity || "")}</td>
       <td class="segment-cell">${segmentChips(row)}</td>
       <td class="criteria-cell">${escapeHtml(criteria || "—")}</td>
-      <td class="stage-cell">${stageCell(row)}</td>
+      <td class="stage-cell">${stageCell(row)}</td>`
+      }
       <td class="info-cell">
         ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
         <p class="info-text ${open ? "" : "clamped"}">${escapeHtml(body)}</p>
