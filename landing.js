@@ -1,4 +1,11 @@
-import { loadProgrammes, countMatches, SEGMENT_OPTIONS, STAGE_OPTIONS } from "./shared.js";
+import {
+  loadProgrammes,
+  peekProgrammesCache,
+  onProgrammesUpdated,
+  countMatches,
+  SEGMENT_OPTIONS,
+  STAGE_OPTIONS,
+} from "./shared.js";
 import { createMultiSelect } from "./multiselect.js";
 
 let resultsPrefetched = false;
@@ -18,7 +25,6 @@ function prefetchResults() {
 function init() {
   const countEl = document.getElementById("match-count");
   const searchBtn = document.querySelector(".btn-search");
-  countEl.classList.add("skeleton-text");
 
   const state = { stages: [], segments: [], query: "", cvr: "all" };
   let programmes = null;
@@ -28,6 +34,14 @@ function init() {
     countEl.classList.remove("skeleton-text");
     const n = countMatches(programmes, state);
     countEl.textContent = `${n} match${n === 1 ? "" : "es"} so far`;
+  }
+
+  const cached = peekProgrammesCache();
+  if (cached) {
+    programmes = cached;
+    updateCount();
+  } else {
+    countEl.classList.add("skeleton-text");
   }
 
   const stageMs = createMultiSelect(document.getElementById("ms-stage"), {
@@ -62,6 +76,11 @@ function init() {
           ? "Open the site over http (or use the published link) — browsers block data files on file://."
           : "Could not load programme data. Please reload the page.";
     });
+
+  onProgrammesUpdated((rows) => {
+    programmes = rows;
+    updateCount();
+  });
 
   searchBtn?.addEventListener("mouseenter", prefetchResults, { once: true });
   searchBtn?.addEventListener("focus", prefetchResults, { once: true });

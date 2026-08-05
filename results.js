@@ -1,5 +1,7 @@
 import {
   loadProgrammes,
+  peekProgrammesCache,
+  onProgrammesUpdated,
   filtersFromUrl,
   filtersToSearchParams,
   filterProgrammes,
@@ -574,20 +576,49 @@ function paintTable() {
   const body = document.getElementById("results-body");
   const empty = document.getElementById("empty");
   const visible = matched.slice(0, state.visibleLimit);
+  const html = visible.map((row, idx) => rowHtml(row, idx)).join("");
 
-  body.innerHTML = visible.map((row, idx) => rowHtml(row, idx)).join("");
-  empty.classList.toggle("hidden", matched.length > 0);
-  updateResultCount(matched.length);
-  updateLoadMore(matched.length, visible.length);
-  updateSortUi();
+  const paint = () => {
+    body.innerHTML = html;
+    empty.classList.toggle("hidden", matched.length > 0);
+    updateResultCount(matched.length);
+    updateLoadMore(matched.length, visible.length);
+    updateSortUi();
+  };
+
+  if (html.length > 120_000) {
+    requestAnimationFrame(paint);
+  } else {
+    paint();
+  }
 }
 
 function paint() {
-  updateColumnFilters();
   paintTable();
+  const syncFilters = () => updateColumnFilters();
+  if (typeof requestIdleCallback === "function") {
+    requestIdleCallback(syncFilters, { timeout: 300 });
+  } else {
+    syncFilters();
+  }
 }
 
 async function init() {
+  onProgrammesUpdated((rows) => {
+    state.all = rows;
+    paint();
+  });
+
+  const cached = peekProgrammesCache();
+  if (cached) {
+    state.all = cached;
+    paint();
+  } else {
+    document.getElementById("result-count").classList.add("skeleton-text");
+  }
+
+  const dataPromise = loadProgrammes();
+
   state.columnFilters = {
     opportunity: createColumnFilter(document.getElementById("col-filter-opportunity"), {
       label: "Opportunity",
@@ -691,10 +722,9 @@ async function init() {
   });
 
   updateSortUi();
-  showTableSkeleton();
 
   try {
-    state.all = await loadProgrammes();
+    state.all = await dataPromise;
     paint();
   } catch (err) {
     console.error(err);

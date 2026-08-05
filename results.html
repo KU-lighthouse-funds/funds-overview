@@ -46,7 +46,7 @@
       </div>
       <div class="toolbar-end">
         <button type="button" id="sort-reset" class="sort-reset" hidden>Reset to default sort</button>
-        <p class="result-count skeleton-text" id="result-count" aria-live="polite">Loading…</p>
+        <p class="result-count" id="result-count" aria-live="polite">Loading…</p>
       </div>
     </div>
 
@@ -72,7 +72,14 @@
             <th>Info</th>
           </tr>
         </thead>
-        <tbody id="results-body"></tbody>
+        <tbody id="results-body">
+          <tr class="skeleton-row" aria-hidden="true"><td colspan="6"><div class="skeleton-block skeleton-block-title"></div><div class="skeleton-block skeleton-block-line"></div><div class="skeleton-block skeleton-block-line short"></div></td></tr>
+          <tr class="skeleton-row" aria-hidden="true"><td colspan="6"><div class="skeleton-block skeleton-block-title"></div><div class="skeleton-block skeleton-block-line"></div><div class="skeleton-block skeleton-block-line short"></div></td></tr>
+          <tr class="skeleton-row" aria-hidden="true"><td colspan="6"><div class="skeleton-block skeleton-block-title"></div><div class="skeleton-block skeleton-block-line"></div><div class="skeleton-block skeleton-block-line short"></div></td></tr>
+          <tr class="skeleton-row" aria-hidden="true"><td colspan="6"><div class="skeleton-block skeleton-block-title"></div><div class="skeleton-block skeleton-block-line"></div><div class="skeleton-block skeleton-block-line short"></div></td></tr>
+          <tr class="skeleton-row" aria-hidden="true"><td colspan="6"><div class="skeleton-block skeleton-block-title"></div><div class="skeleton-block skeleton-block-line"></div><div class="skeleton-block skeleton-block-line short"></div></td></tr>
+          <tr class="skeleton-row" aria-hidden="true"><td colspan="6"><div class="skeleton-block skeleton-block-title"></div><div class="skeleton-block skeleton-block-line"></div><div class="skeleton-block skeleton-block-line short"></div></td></tr>
+        </tbody>
       </table>
       <p id="empty" class="empty hidden">
         No matches. <a href="index.html">Try a new search</a>.

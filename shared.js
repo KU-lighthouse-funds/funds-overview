@@ -278,6 +278,8 @@ export function dedupeCopy(text) {
 let programmesCache = null;
 let programmesDataVersion = null;
 let programmesPromise = null;
+let programmesRevalidatePromise = null;
+const programmesListeners = new Set();
 const PROGRAMMES_CACHE_KEY = "ku-funds-programmes-v4";
 const PROGRAMMES_CACHE_SCHEMA = 4;
 
@@ -337,19 +339,68 @@ async function fetchProgrammesFromNetwork() {
   return { version: "0", programmes: [] };
 }
 
+function notifyProgrammesUpdated(programmes) {
+  programmesListeners.forEach((fn) => {
+    try {
+      fn(programmes);
+    } catch (err) {
+      console.error(err);
+    }
+  });
+}
+
+function revalidateProgrammesCache(cachedVersion) {
+  if (programmesRevalidatePromise) return programmesRevalidatePromise;
+
+  programmesRevalidatePromise = fetchProgrammesFromNetwork()
+    .then(({ version, programmes }) => {
+      if (cachedVersion && cachedVersion === version) return programmesCache;
+      programmesCache = programmes;
+      writeProgrammesCache(version, programmes);
+      notifyProgrammesUpdated(programmes);
+      return programmes;
+    })
+    .catch((err) => {
+      console.warn("Programme data revalidation failed:", err);
+      return programmesCache;
+    })
+    .finally(() => {
+      programmesRevalidatePromise = null;
+    });
+
+  return programmesRevalidatePromise;
+}
+
+/** Cached programmes if already in memory or storage; otherwise null. */
+export function peekProgrammesCache() {
+  if (programmesCache) return programmesCache;
+  return readProgrammesCache();
+}
+
+/** Called when a background refresh returns newer programme data. */
+export function onProgrammesUpdated(listener) {
+  programmesListeners.add(listener);
+  return () => programmesListeners.delete(listener);
+}
+
 export function loadProgrammes() {
-  if (programmesCache) return Promise.resolve(programmesCache);
+  if (programmesCache) {
+    revalidateProgrammesCache(programmesDataVersion);
+    return Promise.resolve(programmesCache);
+  }
 
   const cachedData = readProgrammesCache();
   const cachedVersion = programmesDataVersion;
 
+  if (cachedData) {
+    programmesCache = cachedData;
+    revalidateProgrammesCache(cachedVersion);
+    return Promise.resolve(cachedData);
+  }
+
   if (!programmesPromise) {
     programmesPromise = fetchProgrammesFromNetwork()
       .then(({ version, programmes }) => {
-        if (cachedData && cachedVersion === version) {
-          programmesCache = cachedData;
-          return cachedData;
-        }
         programmesCache = programmes;
         writeProgrammesCache(version, programmes);
         return programmes;
@@ -446,7 +497,6 @@ export function filterProgrammes(programmes, filters) {
       row["KU contact email"],
       row["KU contact hint"],
       row["Fund contact email"],
-      row["PPT notes"],
     ]
       .join(" ")
       .toLowerCase();
