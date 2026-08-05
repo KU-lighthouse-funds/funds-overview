@@ -95,10 +95,10 @@ thead th,
 
 .hero {
   position: relative;
-  min-height: 78vh;
+  min-height: 72vh;
   display: flex;
   align-items: center;
-  padding: 7rem 0 9rem;
+  padding: 6.5rem 0 4.5rem;
   isolation: isolate;
 }
 
@@ -157,8 +157,8 @@ thead th,
 .search-wrap {
   position: relative;
   z-index: 2;
-  margin-top: -7rem;
-  padding-bottom: 3rem;
+  margin-top: -10.5rem;
+  padding-bottom: 3.5rem;
 }
 
 .search-card {
@@ -777,8 +777,8 @@ tr.is-open .name-cell { width: 13rem; }
 @media (max-width: 860px) {
   .search-grid { grid-template-columns: 1fr; }
   .search-card { padding: 1.5rem 1.25rem 1.25rem; }
-  .search-wrap { margin-top: -4rem; }
-  .hero { min-height: 62vh; padding-bottom: 7rem; }
+  .search-wrap { margin-top: -6rem; }
+  .hero { min-height: 58vh; padding-bottom: 4rem; }
   .field-label { min-height: 0; }
   .search-foot { flex-direction: column; align-items: stretch; }
   .btn-search { justify-content: center; }
