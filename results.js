@@ -378,10 +378,17 @@ function syncUrl() {
 function applyFiltersAndPaint() {
   state.expanded.clear();
   syncUrl();
-  paint();
-}
-function paint() {
   updateColumnFilters();
+  paintTable();
+}
+
+function toggleRow(id) {
+  if (state.expanded.has(id)) state.expanded.delete(id);
+  else state.expanded.add(id);
+  paintTable();
+}
+
+function paintTable() {
   const matched = sorted(filterProgrammes(state.all, state.filters));
   const body = document.getElementById("results-body");
   const empty = document.getElementById("empty");
@@ -392,27 +399,11 @@ function paint() {
     `${matched.length} of ${state.all.length} results`;
 
   updateSortUi();
+}
 
-  function toggleRow(id) {
-    if (state.expanded.has(id)) state.expanded.delete(id);
-    else state.expanded.add(id);
-    paint();
-  }
-
-  body.querySelectorAll("[data-toggle]").forEach((btn) => {
-    btn.addEventListener("click", (event) => {
-      event.stopPropagation();
-      toggleRow(btn.dataset.toggle);
-    });
-  });
-
-  body.querySelectorAll("tbody tr").forEach((tr) => {
-    tr.addEventListener("click", (event) => {
-      if (event.target.closest("a")) return;
-      const btn = tr.querySelector("[data-toggle]");
-      if (btn) toggleRow(btn.dataset.toggle);
-    });
-  });
+function paint() {
+  updateColumnFilters();
+  paintTable();
 }
 
 async function init() {
@@ -469,11 +460,26 @@ async function init() {
         .forEach((other) => other.removeAttribute("aria-sort"));
       th.setAttribute("aria-sort", state.sort.dir === 1 ? "ascending" : "descending");
       state.expanded.clear();
-      paint();
+      paintTable();
     });
   });
 
   document.getElementById("sort-reset").addEventListener("click", resetSort);
+
+  const body = document.getElementById("results-body");
+  body.addEventListener("click", (event) => {
+    if (event.target.closest("a")) return;
+    const btn = event.target.closest("[data-toggle]");
+    if (btn) {
+      event.stopPropagation();
+      toggleRow(btn.dataset.toggle);
+      return;
+    }
+    const tr = event.target.closest("tr");
+    if (!tr) return;
+    const rowBtn = tr.querySelector("[data-toggle]");
+    if (rowBtn) toggleRow(rowBtn.dataset.toggle);
+  });
 
   updateSortUi();
   paint();

@@ -260,13 +260,35 @@ export function dedupeCopy(text) {
   return kept.join(" ").replace(/\s{2,}/g, " ").trim();
 }
 
+let programmesCache = null;
+const PROGRAMMES_CACHE_KEY = "ku-funds-programmes-v2";
+
 export async function loadProgrammes() {
+  if (programmesCache) return programmesCache;
+
+  try {
+    const cached = sessionStorage.getItem(PROGRAMMES_CACHE_KEY);
+    if (cached) {
+      programmesCache = JSON.parse(cached);
+      return programmesCache;
+    }
+  } catch {
+    /* sessionStorage unavailable or corrupt */
+  }
+
   // One retry: the first request can land while GitHub Pages is still swapping files.
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const res = await fetch("data/programmes.json", { cache: "no-cache" });
+      const res = await fetch("data/programmes.json");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json();
+      const data = await res.json();
+      programmesCache = data;
+      try {
+        sessionStorage.setItem(PROGRAMMES_CACHE_KEY, JSON.stringify(data));
+      } catch {
+        /* quota or private mode */
+      }
+      return data;
     } catch (err) {
       if (attempt === 1) throw err;
       await new Promise((resolve) => setTimeout(resolve, 600));
