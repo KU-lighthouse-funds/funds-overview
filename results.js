@@ -4,16 +4,26 @@ import {
   filtersToSearchParams,
   filterProgrammes,
   parseSegments,
+  parseStages,
+  rowMatchesStages,
   isSignificantFunding,
   hasKuSupport,
   deadlineSortKey,
   deadlineLead,
   escapeHtml,
   dedupeCopy,
+  debounce,
 } from "./shared.js";
 import { createColumnFilter } from "./multiselect.js";
 
+const PAGE_SIZE = 25;
+
 function uniqueColumnValues(rows, key) {
+  if (key === "Stage") {
+    return [...new Set(rows.flatMap((r) => parseStages(r)))].sort((a, b) =>
+      a.localeCompare(b, "en", { sensitivity: "base" })
+    );
+  }
   return [...new Set(rows.map((r) => (r[key] || "").trim()).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b, "en", { sensitivity: "base" })
   );
@@ -25,10 +35,30 @@ const state = {
   sort: { key: null, dir: 1 },
   expanded: new Set(),
   columnFilters: null,
+  visibleLimit: PAGE_SIZE,
 };
+
+function rowKey(row) {
+  return `${(row.Name || "").trim()}\u001f${(row.Link || "").trim()}`;
+}
+
+function getMatchedRows() {
+  return sorted(filterProgrammes(state.all, state.filters));
+}
+
+function pruneExpanded() {
+  const keys = new Set(getMatchedRows().map(rowKey));
+  for (const key of state.expanded) {
+    if (!keys.has(key)) state.expanded.delete(key);
+  }
+}
 
 function filtersForColumnOptions(excludeKey) {
   return { ...state.filters, [excludeKey]: null };
+}
+
+function syncFilterVisible(instance, values) {
+  instance.setVisible(values ?? []);
 }
 
 function updateColumnFilters() {
@@ -40,7 +70,9 @@ function updateColumnFilters() {
     label: v,
   }));
   state.columnFilters.opportunity.setOptions(oppOpts, { silent: true });
-  state.filters.opportunityCol = state.columnFilters.opportunity.values();
+  state.columnFilters.opportunityMobile.setOptions(oppOpts, { silent: true });
+  syncFilterVisible(state.columnFilters.opportunity, state.filters.opportunityCol);
+  syncFilterVisible(state.columnFilters.opportunityMobile, state.filters.opportunityCol);
 
   const stageRows = filterProgrammes(state.all, filtersForColumnOptions("stageCol"));
   const stageOpts = uniqueColumnValues(stageRows, "Stage").map((v) => ({
@@ -48,7 +80,9 @@ function updateColumnFilters() {
     label: v,
   }));
   state.columnFilters.stage.setOptions(stageOpts, { silent: true });
-  state.filters.stageCol = state.columnFilters.stage.values();
+  state.columnFilters.stageMobile.setOptions(stageOpts, { silent: true });
+  syncFilterVisible(state.columnFilters.stage, state.filters.stageCol);
+  syncFilterVisible(state.columnFilters.stageMobile, state.filters.stageCol);
 }
 
 function cvrTags(row) {
@@ -76,12 +110,22 @@ function segmentChips(row) {
 }
 
 function stageCell(row) {
-  const stage = (row.Stage || "").trim();
+  const stages = parseStages(row);
   const picked = state.filters.stages || [];
-  if (picked.length && picked.includes(stage)) {
-    return `<span class="stage-picked">${escapeHtml(stage)}</span>`;
+  if (!stages.length) return "—";
+  if (stages.length === 1) {
+    const stage = stages[0];
+    if (picked.length && picked.includes(stage)) {
+      return `<span class="stage-picked">${escapeHtml(stage)}</span>`;
+    }
+    return escapeHtml(stage);
   }
-  return escapeHtml(stage);
+  return `<div class="chips">${stages
+    .map((s) => {
+      const cls = picked.includes(s) ? " chip picked stage-chip" : " chip stage-chip";
+      return `<span class="${cls.trim()}">${escapeHtml(s)}</span>`;
+    })
+    .join("")}</div>`;
 }
 
 /** "a@ku.dk" or "Nørre: a@ku.dk | Søndre: b@ku.dk" -> [{ label, address }]. */
@@ -135,6 +179,12 @@ function kuSupportHtml(row) {
   }
 
   return parts.join(" · ");
+}
+
+function kuSupportMobileHtml(row) {
+  if (!hasKuSupport(row)) return "";
+  const unit = (row["KU support unit"] || "").trim();
+  return `<span class="mobile-card-ku-label">KU support</span> ${kuUnitBadge(unit)}`;
 }
 
 function whoToAskContent(row) {
@@ -232,9 +282,61 @@ function metaStackHtml(row, criteria) {
     </div>`;
 }
 
+function metaStackMobileHtml(row, criteria) {
+  const segments = segmentChips(row);
+  return `
+    <div class="mobile-expand-meta">
+      <div class="mobile-expand-meta-row">
+        <div class="mobile-expand-meta-stack">
+          <div class="meta-stack-item">
+            <span class="meta-stack-label">Opportunity</span>
+            <span>${escapeHtml(row.Opportunity || "—")}</span>
+          </div>
+          <div class="meta-stack-item">
+            <span class="meta-stack-label">Stage</span>
+            <span>${stageCell(row)}</span>
+          </div>
+        </div>
+        <div class="mobile-expand-segments">
+          <span class="meta-stack-label">Industry segment</span>
+          ${segments || "<span>—</span>"}
+        </div>
+      </div>
+      <div class="meta-stack-item mobile-expand-criteria">
+        <span class="meta-stack-label">Criteria</span>
+        <span>${escapeHtml(criteria || "—")}</span>
+      </div>
+    </div>`;
+}
+
+function mobileCardHtml(row, { criteria, lead, deadlineLine, body, showMore }) {
+  const infoHeadline = lead || deadlineLine || "";
+  const kuMobile = kuSupportMobileHtml(row);
+
+  return `
+    <div class="mobile-card">
+      <div class="mobile-card-duo">
+        <div class="mobile-card-field">
+          <span class="mobile-card-label">Opportunity</span>
+          <p class="mobile-card-clamp">${escapeHtml(row.Opportunity || "—")}</p>
+          ${kuMobile ? `<p class="mobile-card-ku">${kuMobile}</p>` : ""}
+        </div>
+        <div class="mobile-card-field">
+          <span class="mobile-card-label">Criteria</span>
+          <p class="mobile-card-clamp">${escapeHtml(criteria || "—")}</p>
+        </div>
+      </div>
+      <div class="mobile-card-block mobile-card-info">
+        ${infoHeadline ? `<p class="mobile-card-headline">${escapeHtml(infoHeadline)}</p>` : ""}
+        ${body ? `<p class="mobile-card-clamp">${escapeHtml(body)}</p>` : ""}
+        ${showMore ? `<p class="read-more">Show more</p>` : ""}
+      </div>
+    </div>`;
+}
+
 function rowHtml(row, idx) {
   const id = String(idx);
-  const open = state.expanded.has(id);
+  const open = state.expanded.has(rowKey(row));
 
   const funding = (row["Funding Amount"] || "").trim();
   const quick = dedupeCopy(row["Quick info"] || "");
@@ -287,12 +389,16 @@ function rowHtml(row, idx) {
             .map((t) => `<span class="pill ${t.cls}">${escapeHtml(t.text)}</span>`)
             .join("")}
         </p>
+        ${!open ? mobileCardHtml(row, { criteria, lead, deadlineLine, body, showMore }) : ""}
       </td>
       ${
         open
           ? `<td class="expand-split-cell" colspan="5">
         <div class="expand-split">
-          <div class="expand-stack">${metaStackHtml(row, criteria)}</div>
+          <div class="expand-stack">
+            <div class="expand-meta-desktop">${metaStackHtml(row, criteria)}</div>
+            <div class="expand-meta-mobile">${metaStackMobileHtml(row, criteria)}</div>
+          </div>
           <div class="expand-info">
             ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
             ${deadlineLine ? `<p class="deadline-lead">${escapeHtml(deadlineLine)}</p>` : ""}
@@ -319,6 +425,21 @@ function rowHtml(row, idx) {
 }
 
 function defaultSortCompare(a, b, pickedStages) {
+  const kuA = hasKuSupport(a) ? 0 : 1;
+  const kuB = hasKuSupport(b) ? 0 : 1;
+  if (kuA !== kuB) return kuA - kuB;
+
+  if (kuA === 0) {
+    if (pickedStages.length) {
+      const stageA = parseStages(a).some((s) => pickedStages.includes(s)) ? 0 : 1;
+      const stageB = parseStages(b).some((s) => pickedStages.includes(s)) ? 0 : 1;
+      if (stageA !== stageB) return stageA - stageB;
+    }
+    return String(a.Name || "").localeCompare(String(b.Name || ""), "en", {
+      sensitivity: "base",
+    });
+  }
+
   const da = deadlineSortKey(a.Deadline);
   const db = deadlineSortKey(b.Deadline);
   const datedA = da != null ? 0 : 1;
@@ -326,13 +447,9 @@ function defaultSortCompare(a, b, pickedStages) {
   if (datedA !== datedB) return datedA - datedB;
   if (da != null && db != null && da !== db) return da - db;
 
-  const kuA = hasKuSupport(a) ? 0 : 1;
-  const kuB = hasKuSupport(b) ? 0 : 1;
-  if (kuA !== kuB) return kuA - kuB;
-
   if (pickedStages.length) {
-    const stageA = pickedStages.includes(a.Stage) ? 0 : 1;
-    const stageB = pickedStages.includes(b.Stage) ? 0 : 1;
+    const stageA = parseStages(a).some((s) => pickedStages.includes(s)) ? 0 : 1;
+    const stageB = parseStages(b).some((s) => pickedStages.includes(s)) ? 0 : 1;
     if (stageA !== stageB) return stageA - stageB;
   }
 
@@ -364,6 +481,7 @@ function updateSortUi() {
 function resetSort() {
   state.sort = { key: null, dir: 1 };
   state.expanded.clear();
+  state.visibleLimit = PAGE_SIZE;
   document.querySelectorAll("th.sortable").forEach((th) => th.removeAttribute("aria-sort"));
   updateSortUi();
   paint();
@@ -375,29 +493,92 @@ function syncUrl() {
   window.history.replaceState(null, "", url);
 }
 
-function applyFiltersAndPaint() {
-  state.expanded.clear();
+function applyFiltersAndPaint({ resetExpanded = false, resetPage = true } = {}) {
+  if (resetExpanded) state.expanded.clear();
+  else pruneExpanded();
+  if (resetPage) state.visibleLimit = PAGE_SIZE;
   syncUrl();
   updateColumnFilters();
   paintTable();
 }
 
+function replaceRowElement(id, row) {
+  const tr = document.querySelector(`tr[data-row="${id}"]`);
+  if (!tr) {
+    paintTable();
+    return;
+  }
+  const wrapper = document.createElement("tbody");
+  wrapper.innerHTML = rowHtml(row, id);
+  tr.replaceWith(wrapper.firstElementChild);
+}
+
 function toggleRow(id) {
-  if (state.expanded.has(id)) state.expanded.delete(id);
-  else state.expanded.add(id);
-  paintTable();
+  const matched = getMatchedRows().slice(0, state.visibleLimit);
+  const row = matched[Number(id)];
+  if (!row) return;
+
+  const key = rowKey(row);
+  if (state.expanded.has(key)) state.expanded.delete(key);
+  else state.expanded.add(key);
+  replaceRowElement(id, row);
+}
+
+function tableSkeletonHtml(count = 6) {
+  return Array.from({ length: count }, () => `
+    <tr class="skeleton-row" aria-hidden="true">
+      <td colspan="6">
+        <div class="skeleton-block skeleton-block-title"></div>
+        <div class="skeleton-block skeleton-block-line"></div>
+        <div class="skeleton-block skeleton-block-line short"></div>
+      </td>
+    </tr>`).join("");
+}
+
+function showTableSkeleton() {
+  const body = document.getElementById("results-body");
+  const wrap = document.getElementById("load-more-wrap");
+  body.innerHTML = tableSkeletonHtml();
+  wrap?.classList.add("hidden");
+  document.getElementById("result-count").classList.add("skeleton-text");
+}
+
+function updateLoadMore(total, shown) {
+  const wrap = document.getElementById("load-more-wrap");
+  const btn = document.getElementById("load-more");
+  if (!wrap || !btn) return;
+
+  const remaining = total - shown;
+  if (remaining <= 0) {
+    wrap.classList.add("hidden");
+    return;
+  }
+
+  wrap.classList.remove("hidden");
+  const step = Math.min(PAGE_SIZE, remaining);
+  btn.textContent = `Show ${step} more (${remaining} remaining)`;
+}
+
+function updateResultCount(total) {
+  const el = document.getElementById("result-count");
+  el.classList.remove("skeleton-text");
+  const shown = Math.min(state.visibleLimit, total);
+  el.textContent =
+    shown < total
+      ? `${shown} of ${total} shown · ${state.all.length} total`
+      : `${total} of ${state.all.length} results`;
 }
 
 function paintTable() {
-  const matched = sorted(filterProgrammes(state.all, state.filters));
+  const matched = getMatchedRows();
   const body = document.getElementById("results-body");
   const empty = document.getElementById("empty");
+  const visible = matched.slice(0, state.visibleLimit);
 
-  body.innerHTML = matched.map(rowHtml).join("");
+  body.innerHTML = visible.map((row, idx) => rowHtml(row, idx)).join("");
   empty.classList.toggle("hidden", matched.length > 0);
-  document.getElementById("result-count").textContent =
-    `${matched.length} of ${state.all.length} results`;
-
+  updateResultCount(matched.length);
+  updateLoadMore(matched.length, visible.length);
   updateSortUi();
 }
 
@@ -407,8 +588,6 @@ function paint() {
 }
 
 async function init() {
-  state.all = await loadProgrammes();
-
   state.columnFilters = {
     opportunity: createColumnFilter(document.getElementById("col-filter-opportunity"), {
       label: "Opportunity",
@@ -418,8 +597,29 @@ async function init() {
         applyFiltersAndPaint();
       },
     }),
+    opportunityMobile: createColumnFilter(
+      document.getElementById("col-filter-opportunity-mobile"),
+      {
+        label: "Opportunity",
+        showLabel: true,
+        options: [],
+        onChange: (values) => {
+          state.filters.opportunityCol = values;
+          applyFiltersAndPaint();
+        },
+      }
+    ),
     stage: createColumnFilter(document.getElementById("col-filter-stage"), {
       label: "Stage",
+      options: [],
+      onChange: (values) => {
+        state.filters.stageCol = values;
+        applyFiltersAndPaint();
+      },
+    }),
+    stageMobile: createColumnFilter(document.getElementById("col-filter-stage-mobile"), {
+      label: "Stage",
+      showLabel: true,
       options: [],
       onChange: (values) => {
         state.filters.stageCol = values;
@@ -430,9 +630,17 @@ async function init() {
 
   const q = document.getElementById("q");
   q.value = state.filters.query || "";
-  q.addEventListener("input", () => {
-    state.filters.query = q.value.trim();
-    applyFiltersAndPaint();
+  q.addEventListener(
+    "input",
+    debounce(() => {
+      state.filters.query = q.value.trim();
+      applyFiltersAndPaint({ resetExpanded: false, resetPage: true });
+    }, 180)
+  );
+
+  document.getElementById("load-more")?.addEventListener("click", () => {
+    state.visibleLimit += PAGE_SIZE;
+    paintTable();
   });
 
   document.querySelectorAll(".seg button").forEach((btn) => {
@@ -443,7 +651,7 @@ async function init() {
       document
         .querySelectorAll(".seg button")
         .forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
-      applyFiltersAndPaint();
+      applyFiltersAndPaint({ resetExpanded: false, resetPage: true });
     });
   });
 
@@ -460,6 +668,7 @@ async function init() {
         .forEach((other) => other.removeAttribute("aria-sort"));
       th.setAttribute("aria-sort", state.sort.dir === 1 ? "ascending" : "descending");
       state.expanded.clear();
+      state.visibleLimit = PAGE_SIZE;
       paintTable();
     });
   });
@@ -482,12 +691,19 @@ async function init() {
   });
 
   updateSortUi();
-  paint();
+  showTableSkeleton();
+
+  try {
+    state.all = await loadProgrammes();
+    paint();
+  } catch (err) {
+    console.error(err);
+    const el = document.getElementById("result-count");
+    el.classList.remove("skeleton-text");
+    el.classList.add("load-error");
+    el.textContent = "Could not load programme data. Please reload the page.";
+    document.getElementById("results-body").innerHTML = "";
+  }
 }
 
-init().catch((err) => {
-  console.error(err);
-  const el = document.getElementById("result-count");
-  el.classList.add("load-error");
-  el.textContent = "Could not load programme data. Please reload the page.";
-});
+init();

@@ -10,6 +10,9 @@
   <link rel="preload" href="assets/hero-university-sm.webp" as="image" type="image/webp" media="(max-width: 767px)" fetchpriority="high" />
   <link rel="preload" href="assets/hero-university-md.webp" as="image" type="image/webp" media="(min-width: 768px)" fetchpriority="high" />
   <link rel="preload" href="data/programmes.json" as="fetch" crossorigin="anonymous" />
+  <link rel="modulepreload" href="landing.js" />
+  <link rel="modulepreload" href="shared.js" />
+  <link rel="modulepreload" href="multiselect.js" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="page-landing">
@@ -56,7 +59,7 @@
       </div>
 
       <div class="search-foot">
-        <p class="count" id="match-count" aria-live="polite">Loading programmes…</p>
+        <p class="count skeleton-text" id="match-count" aria-live="polite">Loading programmes…</p>
         <button type="submit" class="btn-search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
                stroke-linecap="round" aria-hidden="true">

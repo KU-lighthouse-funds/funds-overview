@@ -7,12 +7,15 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preload" href="assets/fonts/open-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="data/programmes.json" as="fetch" crossorigin="anonymous" />
+  <link rel="modulepreload" href="results.js" />
+  <link rel="modulepreload" href="shared.js" />
+  <link rel="modulepreload" href="multiselect.js" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="page-results">
   <div class="brandbar">
     <div class="shell">
-      <img src="assets/ku-logo.png" alt="University of Copenhagen" />
+      <img src="assets/ku-logo.png" alt="University of Copenhagen" loading="lazy" decoding="async" />
     </div>
   </div>
 
@@ -26,6 +29,16 @@
   <main class="shell results-main">
     <div class="toolbar">
       <input id="q" type="search" placeholder="Search name, criteria, keywords…" autocomplete="off" />
+      <div class="toolbar-filters-mobile" aria-label="Filter results">
+        <div class="mobile-filter-field">
+          <span class="mobile-filter-label">Opportunity</span>
+          <div class="col-filter" id="col-filter-opportunity-mobile"></div>
+        </div>
+        <div class="mobile-filter-field">
+          <span class="mobile-filter-label">Stage</span>
+          <div class="col-filter" id="col-filter-stage-mobile"></div>
+        </div>
+      </div>
       <div class="seg" role="group" aria-label="Company status">
         <button type="button" data-cvr="all" aria-pressed="true">All</button>
         <button type="button" data-cvr="no-company" aria-pressed="false">No company yet</button>
@@ -33,7 +46,7 @@
       </div>
       <div class="toolbar-end">
         <button type="button" id="sort-reset" class="sort-reset" hidden>Reset to default sort</button>
-        <p class="result-count" id="result-count">Loading…</p>
+        <p class="result-count skeleton-text" id="result-count" aria-live="polite">Loading…</p>
       </div>
     </div>
 
@@ -64,6 +77,9 @@
       <p id="empty" class="empty hidden">
         No matches. <a href="index.html">Try a new search</a>.
       </p>
+    </div>
+    <div class="load-more-wrap hidden" id="load-more-wrap">
+      <button type="button" id="load-more" class="load-more">Show 25 more</button>
     </div>
   </main>
 

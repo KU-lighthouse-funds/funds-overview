@@ -6,6 +6,7 @@ import { escapeHtml } from "./shared.js";
  */
 export function createMultiSelect(root, { options, placeholder, onChange }) {
   const selected = new Set();
+  let panelBuilt = false;
 
   root.innerHTML = `
     <button type="button" class="ms-toggle" aria-expanded="false" aria-haspopup="listbox">
@@ -15,10 +16,19 @@ export function createMultiSelect(root, { options, placeholder, onChange }) {
         <path d="M6 9l6 6 6-6" />
       </svg>
     </button>
-    <div class="ms-panel" role="listbox" aria-multiselectable="true" hidden>
-      ${options
-        .map(
-          (o) => `
+    <div class="ms-panel" role="listbox" aria-multiselectable="true" hidden></div>
+  `;
+
+  const toggle = root.querySelector(".ms-toggle");
+  const panel = root.querySelector(".ms-panel");
+  const label = root.querySelector(".ms-label");
+
+  function buildPanel() {
+    if (panelBuilt) return;
+    panelBuilt = true;
+    panel.innerHTML = options
+      .map(
+        (o) => `
         <button type="button" class="ms-option" role="option" aria-selected="false"
                 data-value="${escapeHtml(o.value)}">
           <span class="ms-check" aria-hidden="true">✓</span>
@@ -27,14 +37,10 @@ export function createMultiSelect(root, { options, placeholder, onChange }) {
             ${o.desc ? `<span class="ms-opt-desc">${escapeHtml(o.desc)}</span>` : ""}
           </span>
         </button>`
-        )
-        .join("")}
-    </div>
-  `;
-
-  const toggle = root.querySelector(".ms-toggle");
-  const panel = root.querySelector(".ms-panel");
-  const label = root.querySelector(".ms-label");
+      )
+      .join("");
+    syncOptions();
+  }
 
   function renderLabel() {
     if (selected.size === 0) {
@@ -49,6 +55,7 @@ export function createMultiSelect(root, { options, placeholder, onChange }) {
   }
 
   function syncOptions() {
+    if (!panelBuilt) return;
     panel.querySelectorAll(".ms-option").forEach((opt) => {
       opt.setAttribute("aria-selected", String(selected.has(opt.dataset.value)));
     });
@@ -62,6 +69,7 @@ export function createMultiSelect(root, { options, placeholder, onChange }) {
   }
 
   function setOpen(open) {
+    if (open) buildPanel();
     panel.hidden = !open;
     toggle.setAttribute("aria-expanded", String(open));
   }
@@ -95,17 +103,26 @@ export function createMultiSelect(root, { options, placeholder, onChange }) {
  * Options can be updated dynamically via setOptions().
  * Returns null when all are checked (= no filter).
  */
-export function createColumnFilter(root, { options: initialOptions, label, onChange }) {
+export function createColumnFilter(root, { options: initialOptions, label, showLabel = false, onChange }) {
   let options = [...initialOptions];
   const visible = new Set(options.map((o) => o.value));
 
-  root.innerHTML = `
-    <button type="button" class="col-filter-toggle" aria-expanded="false"
-            aria-haspopup="listbox" aria-label="Filter ${escapeHtml(label)}">
+  const toggleInner = showLabel
+    ? `<span class="col-filter-toggle-text">${escapeHtml(label)}</span>
       <svg class="col-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-      </svg>
+      </svg>`
+    : `<svg class="col-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+      </svg>`;
+
+  root.innerHTML = `
+    <button type="button" class="col-filter-toggle${showLabel ? " col-filter-toggle--labeled" : ""}"
+            aria-expanded="false" aria-haspopup="listbox"
+            aria-label="Filter ${escapeHtml(label)}">
+      ${toggleInner}
       <span class="col-filter-dot" hidden aria-hidden="true"></span>
     </button>
     <div class="col-filter-panel" role="listbox" aria-multiselectable="true" hidden>
@@ -121,8 +138,10 @@ export function createColumnFilter(root, { options: initialOptions, label, onCha
   const panel = root.querySelector(".col-filter-panel");
   const optionsEl = root.querySelector(".col-filter-options");
   const dot = root.querySelector(".col-filter-dot");
+  let optionsRendered = false;
 
   function renderOptionsList() {
+    optionsRendered = true;
     if (!options.length) {
       optionsEl.innerHTML = `<p class="col-filter-empty">None in current results</p>`;
       return;
@@ -136,9 +155,14 @@ export function createColumnFilter(root, { options: initialOptions, label, onCha
         </label>`
       )
       .join("");
+    syncCheckboxes();
   }
 
   function syncCheckboxes() {
+    if (!optionsRendered) {
+      dot.hidden = visible.size >= options.length;
+      return;
+    }
     panel.querySelectorAll('.col-filter-option input[type="checkbox"]').forEach((input) => {
       input.checked = visible.has(input.value);
     });
@@ -178,6 +202,7 @@ export function createColumnFilter(root, { options: initialOptions, label, onCha
 
   function setOpen(open) {
     if (open) {
+      if (!optionsRendered) renderOptionsList();
       panel.classList.add("is-floating");
       document.body.appendChild(panel);
       positionPanel();
@@ -217,8 +242,9 @@ export function createColumnFilter(root, { options: initialOptions, label, onCha
     }
 
     options = next;
-    renderOptionsList();
-    syncCheckboxes();
+    optionsRendered = false;
+    if (!panel.hidden) renderOptionsList();
+    else syncCheckboxes();
     if (!silent) emit();
   }
 
@@ -264,7 +290,6 @@ export function createColumnFilter(root, { options: initialOptions, label, onCha
     if (event.key === "Escape") setOpen(false);
   });
 
-  renderOptionsList();
   syncCheckboxes();
 
   return {

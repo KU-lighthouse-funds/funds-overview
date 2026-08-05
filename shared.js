@@ -28,6 +28,21 @@ export function parseSegments(row) {
     .filter(Boolean);
 }
 
+/** One or more journey stages — comma-separated in CSV, like industry segments. */
+export function parseStages(row) {
+  return (row.Stage || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+export function rowMatchesStages(row, pickedStages) {
+  if (!pickedStages?.length) return true;
+  const rowStages = parseStages(row);
+  if (rowStages.includes("All stages")) return true;
+  return pickedStages.some((s) => rowStages.includes(s));
+}
+
 /** Innovation journey stages for filters and the landing-page dropdown. */
 export const STAGE_OPTIONS = [
   {
@@ -261,40 +276,101 @@ export function dedupeCopy(text) {
 }
 
 let programmesCache = null;
-const PROGRAMMES_CACHE_KEY = "ku-funds-programmes-v2";
+let programmesDataVersion = null;
+let programmesPromise = null;
+const PROGRAMMES_CACHE_KEY = "ku-funds-programmes-v4";
+const PROGRAMMES_CACHE_SCHEMA = 4;
 
-export async function loadProgrammes() {
-  if (programmesCache) return programmesCache;
-
-  try {
-    const cached = sessionStorage.getItem(PROGRAMMES_CACHE_KEY);
-    if (cached) {
-      programmesCache = JSON.parse(cached);
-      return programmesCache;
-    }
-  } catch {
-    /* sessionStorage unavailable or corrupt */
+function normalizeProgrammesPayload(raw) {
+  if (Array.isArray(raw)) {
+    return { version: `legacy-${raw.length}`, programmes: raw };
   }
+  return {
+    version: String(raw?.version || raw?.programmes?.length || 0),
+    programmes: Array.isArray(raw?.programmes) ? raw.programmes : [],
+  };
+}
 
-  // One retry: the first request can land while GitHub Pages is still swapping files.
+function readProgrammesCache() {
+  for (const store of [localStorage, sessionStorage]) {
+    try {
+      const raw = store.getItem(PROGRAMMES_CACHE_KEY);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      if (parsed?.schema !== PROGRAMMES_CACHE_SCHEMA || !parsed?.version || !Array.isArray(parsed.data)) {
+        continue;
+      }
+      programmesDataVersion = parsed.version;
+      return parsed.data;
+    } catch {
+      /* unavailable or corrupt */
+    }
+  }
+  return null;
+}
+
+function writeProgrammesCache(version, data) {
+  programmesDataVersion = version;
+  const payload = JSON.stringify({ schema: PROGRAMMES_CACHE_SCHEMA, version, data });
+  for (const store of [localStorage, sessionStorage]) {
+    try {
+      store.setItem(PROGRAMMES_CACHE_KEY, payload);
+    } catch {
+      /* quota or private mode */
+    }
+  }
+}
+
+async function fetchProgrammesFromNetwork() {
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       const res = await fetch("data/programmes.json");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      programmesCache = data;
-      try {
-        sessionStorage.setItem(PROGRAMMES_CACHE_KEY, JSON.stringify(data));
-      } catch {
-        /* quota or private mode */
-      }
-      return data;
+      const raw = await res.json();
+      const { version, programmes } = normalizeProgrammesPayload(raw);
+      return { version, programmes };
     } catch (err) {
       if (attempt === 1) throw err;
       await new Promise((resolve) => setTimeout(resolve, 600));
     }
   }
-  return [];
+  return { version: "0", programmes: [] };
+}
+
+export function loadProgrammes() {
+  if (programmesCache) return Promise.resolve(programmesCache);
+
+  const cachedData = readProgrammesCache();
+  const cachedVersion = programmesDataVersion;
+
+  if (!programmesPromise) {
+    programmesPromise = fetchProgrammesFromNetwork()
+      .then(({ version, programmes }) => {
+        if (cachedData && cachedVersion === version) {
+          programmesCache = cachedData;
+          return cachedData;
+        }
+        programmesCache = programmes;
+        writeProgrammesCache(version, programmes);
+        return programmes;
+      })
+      .finally(() => {
+        programmesPromise = null;
+      });
+  }
+
+  return programmesPromise;
+}
+
+loadProgrammes();
+
+/** Delay rapid calls — e.g. search input. */
+export function debounce(fn, ms) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
 }
 
 export function filtersFromUrl() {
@@ -323,11 +399,7 @@ export function filterProgrammes(programmes, filters) {
   const cvr = filters.cvr || "all";
 
   return programmes.filter((row) => {
-    if (filters.stages?.length) {
-      // Programmes that span the whole journey stay visible whichever stage is picked.
-      const spansAllStages = row.Stage === "All stages";
-      if (!spansAllStages && !filters.stages.includes(row.Stage)) return false;
-    }
+    if (filters.stages?.length && !rowMatchesStages(row, filters.stages)) return false;
 
     if (filters.segments?.length) {
       const segs = parseSegments(row);
@@ -347,8 +419,8 @@ export function filterProgrammes(programmes, filters) {
     }
 
     if (filters.stageCol != null) {
-      const stage = (row.Stage || "").trim();
-      if (!filters.stageCol.includes(stage)) return false;
+      const rowStages = parseStages(row);
+      if (!filters.stageCol.some((s) => rowStages.includes(s))) return false;
     }
 
     if (cvr !== "all") {
