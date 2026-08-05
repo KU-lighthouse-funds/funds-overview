@@ -97,9 +97,11 @@ const SEGMENT_OPTIONS_RAW = [
   },
 ];
 
-export const SEGMENT_OPTIONS = [...SEGMENT_OPTIONS_RAW].sort((a, b) =>
-  a.label.localeCompare(b.label, "en", { sensitivity: "base" })
-);
+export const SEGMENT_OPTIONS = [...SEGMENT_OPTIONS_RAW].sort((a, b) => {
+  if (a.value === "General") return -1;
+  if (b.value === "General") return 1;
+  return a.label.localeCompare(b.label, "en", { sensitivity: "base" });
+});
 
 export function hasKuSupport(row) {
   const unit = (row["KU support unit"] || "").trim();
