@@ -7,9 +7,9 @@
   <meta name="description" content="Search grants, programmes and support for founders and researchers." />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preload" href="assets/fonts/open-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" href="assets/hero-university-sm.webp" as="image" type="image/webp" media="(max-width: 767px)" fetchpriority="high" />
-  <link rel="preload" href="assets/hero-university-md.webp" as="image" type="image/webp" media="(min-width: 768px)" fetchpriority="high" />
-  <link rel="preload" href="data/programmes.json" as="fetch" crossorigin="anonymous" />
+  <link rel="preload" href="data/programmes.json" as="fetch" crossorigin="anonymous" fetchpriority="high" />
+  <link rel="preload" href="assets/hero-university-sm.webp" as="image" type="image/webp" media="(max-width: 767px)" fetchpriority="low" />
+  <link rel="preload" href="assets/hero-university-md.webp" as="image" type="image/webp" media="(min-width: 768px)" fetchpriority="low" />
   <link rel="modulepreload" href="landing.js" />
   <link rel="modulepreload" href="shared.js" />
   <link rel="modulepreload" href="multiselect.js" />
@@ -21,7 +21,8 @@
     <div class="hero-scrim" aria-hidden="true"></div>
     <div class="brandbar">
       <div class="shell">
-        <img src="assets/ku-logo-white.png" alt="University of Copenhagen" />
+        <img src="assets/ku-logo-white.png" alt="University of Copenhagen"
+             width="88" height="120" decoding="async" fetchpriority="low" />
       </div>
     </div>
     <div class="hero-copy">
