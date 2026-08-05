@@ -70,32 +70,37 @@ export function deadlineSortKey(text, now = new Date()) {
   if (/^per (programme )?call\.?$/.test(lower)) return null;
   if (/^check /.test(lower)) return null;
 
+  const hits = [];
+  const yearInText = raw.match(/\b(\d{4})\b/)?.[1];
+
   for (const match of raw.matchAll(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/g)) {
     const month = monthIndex(match[2]);
-    if (month >= 0) return dateKey(+match[3], month, +match[1], now);
+    if (month >= 0) hits.push(dateKey(+match[3], month, +match[1], now));
   }
 
   for (const match of raw.matchAll(/\b([A-Za-z]+)\.?\s+(\d{4})\b/g)) {
     const month = monthIndex(match[1]);
-    if (month >= 0) return dateKey(+match[2], month, 1, now);
+    if (month >= 0) hits.push(dateKey(+match[2], month, 1, now));
   }
 
-  const monthHits = [];
-  for (const match of raw.matchAll(
-    /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\b/gi
-  )) {
-    const month = monthIndex(match[1]);
-    if (month >= 0) monthHits.push(dateKey(null, month, 1, now));
-  }
-  if (monthHits.length) return Math.min(...monthHits);
-
-  const dayFirst = raw.match(/(\d{1,2})\s+([A-Za-z]+)(?!\s+\d{4})/);
-  if (dayFirst) {
-    const month = monthIndex(dayFirst[2]);
-    if (month >= 0) return dateKey(null, month, +dayFirst[1], now);
+  for (const match of raw.matchAll(/(\d{1,2})\s+([A-Za-z]+)(?!\s+\d{4})/g)) {
+    const month = monthIndex(match[2]);
+    if (month >= 0) {
+      hits.push(dateKey(yearInText ? +yearInText : null, month, +match[1], now));
+    }
   }
 
-  return null;
+  if (!hits.length) {
+    for (const match of raw.matchAll(
+      /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\b/gi
+    )) {
+      const month = monthIndex(match[1]);
+      if (month >= 0) hits.push(dateKey(yearInText ? +yearInText : null, month, 1, now));
+    }
+  }
+
+  if (!hits.length) return null;
+  return Math.min(...hits);
 }
 
 /** Short Info-header line when a parseable deadline is still ahead; null otherwise. */
