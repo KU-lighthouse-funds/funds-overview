@@ -175,101 +175,18 @@ thead th,
 }
 
 .field-label {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.45rem;
-  /* Two-line box so both dropdowns line up when one label wraps. */
-  min-height: 2.3rem;
-  margin: 0 0 0.85rem;
+  display: block;
+  margin: 0 0 0.35rem;
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   line-height: 1.4;
   color: var(--dark-blue);
 }
 
-.field-label-text { flex: 1; }
-
-.info-popover {
-  position: relative;
-  flex: none;
-  margin-top: 0.05rem;
-}
-
-.info-trigger {
-  display: grid;
-  place-items: center;
-  width: 1.15rem;
-  height: 1.15rem;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--dark-grey);
-  cursor: pointer;
-}
-
-.info-trigger:hover,
-.info-trigger[aria-expanded="true"] {
-  color: var(--dark-blue);
-}
-
-.info-trigger svg {
-  width: 1.05rem;
-  height: 1.05rem;
-}
-
-.info-panel {
-  position: absolute;
-  top: calc(100% + 0.45rem);
-  left: 0;
-  z-index: 50;
-  width: min(18rem, calc(100vw - 3rem));
-  padding: 1rem 1.1rem;
-  background: var(--champagne);
-  border: var(--rule) solid var(--dark-blue);
-}
-
-.info-panel-wide {
-  width: min(22rem, calc(100vw - 3rem));
-  max-height: min(24rem, calc(100vh - 8rem));
-  overflow-y: auto;
-}
-
-.info-panel[hidden] { display: none; }
-
-.info-panel-title {
-  margin: 0 0 0.75rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--dark-blue);
-}
-
-.info-panel-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.info-panel-list li + li {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: var(--rule) solid var(--line);
-}
-
-.info-panel-list strong {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0;
-  color: var(--dark-blue);
-}
-
-.info-panel-list p {
-  margin: 0.2rem 0 0;
-  font-size: 0.8rem;
-  line-height: 1.4;
+.field-hint {
+  margin: 0 0 0.65rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
   letter-spacing: 0;
   text-transform: none;
   color: var(--dark-grey);
@@ -350,9 +267,9 @@ thead th,
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(100% + 0.4rem);
+  top: calc(100% + 0.4rem);
   z-index: 30;
-  max-height: 19rem;
+  max-height: min(19rem, calc(100vh - 12rem));
   overflow-y: auto;
   background: var(--champagne);
   border: var(--rule) solid var(--line);

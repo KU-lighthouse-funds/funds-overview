@@ -1,6 +1,5 @@
 import { loadProgrammes, countMatches, SEGMENT_OPTIONS } from "./shared.js";
 import { createMultiSelect } from "./multiselect.js";
-import { bindInfoPopover } from "./info-popover.js";
 
 const STAGE_OPTIONS = [
   {
@@ -25,18 +24,6 @@ const STAGE_OPTIONS = [
   },
 ];
 
-function fillInfoList(listEl, items) {
-  listEl.innerHTML = items
-    .map(
-      (item) => `
-        <li>
-          <strong>${item.label}</strong>
-          <p>${item.desc}</p>
-        </li>`
-    )
-    .join("");
-}
-
 async function init() {
   const programmes = await loadProgrammes();
 
@@ -47,12 +34,6 @@ async function init() {
     const n = countMatches(programmes, state);
     countEl.textContent = `${n} matching opportunit${n === 1 ? "y" : "ies"} so far`;
   }
-
-  bindInfoPopover(document.getElementById("stage-info"));
-
-  const segmentList = document.getElementById("segment-info-list");
-  if (segmentList) fillInfoList(segmentList, SEGMENT_OPTIONS);
-  bindInfoPopover(document.getElementById("segment-info"));
 
   const stageMs = createMultiSelect(document.getElementById("ms-stage"), {
     options: STAGE_OPTIONS,
