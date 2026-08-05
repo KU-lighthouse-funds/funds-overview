@@ -33,6 +33,71 @@ export function hasKuSupport(row) {
   return Boolean(unit) && !["—", "–", "-", "?"].includes(unit);
 }
 
+function monthIndex(token) {
+  const key = token.toLowerCase().replace(/\./g, "").slice(0, 4);
+  if (key.startsWith("jan")) return 0;
+  if (key.startsWith("feb")) return 1;
+  if (key.startsWith("mar")) return 2;
+  if (key.startsWith("apr")) return 3;
+  if (key.startsWith("may")) return 4;
+  if (key.startsWith("jun")) return 5;
+  if (key.startsWith("jul")) return 6;
+  if (key.startsWith("aug")) return 7;
+  if (key.startsWith("sep")) return 8;
+  if (key.startsWith("oct")) return 9;
+  if (key.startsWith("nov")) return 10;
+  if (key.startsWith("dec")) return 11;
+  return -1;
+}
+
+function dateKey(year, month, day, now) {
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (year != null) return new Date(year, month, day).getTime();
+
+  let candidate = new Date(now.getFullYear(), month, day);
+  if (candidate < startOfToday) candidate = new Date(now.getFullYear() + 1, month, day);
+  return candidate.getTime();
+}
+
+/** Best-effort timestamp for sorting by nearest deadline; null when unknown / rolling. */
+export function deadlineSortKey(text, now = new Date()) {
+  const raw = (text || "").trim();
+  if (!raw) return null;
+
+  const lower = raw.toLowerCase();
+  if (/^rolling\.?$/.test(lower)) return null;
+  if (/^annual call\.?$/.test(lower)) return null;
+  if (/^per (programme )?call\.?$/.test(lower)) return null;
+  if (/^check /.test(lower)) return null;
+
+  for (const match of raw.matchAll(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/g)) {
+    const month = monthIndex(match[2]);
+    if (month >= 0) return dateKey(+match[3], month, +match[1], now);
+  }
+
+  for (const match of raw.matchAll(/\b([A-Za-z]+)\.?\s+(\d{4})\b/g)) {
+    const month = monthIndex(match[1]);
+    if (month >= 0) return dateKey(+match[2], month, 1, now);
+  }
+
+  const monthHits = [];
+  for (const match of raw.matchAll(
+    /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\b/gi
+  )) {
+    const month = monthIndex(match[1]);
+    if (month >= 0) monthHits.push(dateKey(null, month, 1, now));
+  }
+  if (monthHits.length) return Math.min(...monthHits);
+
+  const dayFirst = raw.match(/(\d{1,2})\s+([A-Za-z]+)(?!\s+\d{4})/);
+  if (dayFirst) {
+    const month = monthIndex(dayFirst[2]);
+    if (month >= 0) return dateKey(null, month, +dayFirst[1], now);
+  }
+
+  return null;
+}
+
 export function escapeHtml(s) {
   return String(s)
     .replaceAll("&", "&amp;")

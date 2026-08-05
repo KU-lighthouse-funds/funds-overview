@@ -5,6 +5,7 @@ import {
   parseSegments,
   isSignificantFunding,
   hasKuSupport,
+  deadlineSortKey,
   escapeHtml,
   dedupeCopy,
 } from "./shared.js";
@@ -244,6 +245,29 @@ function rowHtml(row, idx) {
   `;
 }
 
+function defaultSortCompare(a, b, pickedStages) {
+  const da = deadlineSortKey(a.Deadline);
+  const db = deadlineSortKey(b.Deadline);
+  const datedA = da != null ? 0 : 1;
+  const datedB = db != null ? 0 : 1;
+  if (datedA !== datedB) return datedA - datedB;
+  if (da != null && db != null && da !== db) return da - db;
+
+  const kuA = hasKuSupport(a) ? 0 : 1;
+  const kuB = hasKuSupport(b) ? 0 : 1;
+  if (kuA !== kuB) return kuA - kuB;
+
+  if (pickedStages.length) {
+    const stageA = pickedStages.includes(a.Stage) ? 0 : 1;
+    const stageB = pickedStages.includes(b.Stage) ? 0 : 1;
+    if (stageA !== stageB) return stageA - stageB;
+  }
+
+  return String(a.Name || "").localeCompare(String(b.Name || ""), "en", {
+    sensitivity: "base",
+  });
+}
+
 function sorted(rows) {
   const { key, dir } = state.sort;
   if (key) {
@@ -253,13 +277,23 @@ function sorted(rows) {
       }) * dir
     );
   }
-  // Unsorted view: show the stages actually asked for before the always-on
-  // "All stages" entries, so those don't bury the real matches.
+
   const picked = state.filters.stages || [];
-  if (!picked.length) return rows;
-  return [...rows].sort(
-    (a, b) => Number(picked.includes(b.Stage)) - Number(picked.includes(a.Stage))
-  );
+  return [...rows].sort((a, b) => defaultSortCompare(a, b, picked));
+}
+
+function updateSortUi() {
+  const reset = document.getElementById("sort-reset");
+  const usingCustom = Boolean(state.sort.key);
+  reset.hidden = !usingCustom;
+}
+
+function resetSort() {
+  state.sort = { key: null, dir: 1 };
+  state.expanded.clear();
+  document.querySelectorAll("th.sortable").forEach((th) => th.removeAttribute("aria-sort"));
+  updateSortUi();
+  paint();
 }
 
 function paint() {
@@ -271,6 +305,8 @@ function paint() {
   empty.classList.toggle("hidden", matched.length > 0);
   document.getElementById("result-count").textContent =
     `${matched.length} of ${state.all.length} results`;
+
+  updateSortUi();
 
   function toggleRow(id) {
     if (state.expanded.has(id)) state.expanded.delete(id);
@@ -332,6 +368,9 @@ async function init() {
     });
   });
 
+  document.getElementById("sort-reset").addEventListener("click", resetSort);
+
+  updateSortUi();
   paint();
 }
 
