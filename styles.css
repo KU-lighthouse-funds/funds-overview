@@ -228,6 +228,12 @@ thead th,
   border: var(--rule) solid var(--dark-blue);
 }
 
+.info-panel-wide {
+  width: min(22rem, calc(100vw - 3rem));
+  max-height: min(24rem, calc(100vh - 8rem));
+  overflow-y: auto;
+}
+
 .info-panel[hidden] { display: none; }
 
 .info-panel-title {

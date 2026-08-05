@@ -77,7 +77,21 @@
 
         <div class="field">
           <label class="field-label" id="segment-label">
-            Select your industry segment to find relevant opportunities
+            <span class="field-label-text">Select your industry segment to find relevant opportunities</span>
+            <span class="info-popover" id="segment-info">
+              <button type="button" class="info-trigger" aria-expanded="false"
+                      aria-controls="segment-info-panel" aria-label="Learn about industry segments">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 10v6M12 7h.01" />
+                </svg>
+              </button>
+              <div class="info-panel info-panel-wide" id="segment-info-panel" hidden>
+                <p class="info-panel-title">Industry segments</p>
+                <ul class="info-panel-list" id="segment-info-list"></ul>
+              </div>
+            </span>
           </label>
           <div class="ms" id="ms-segment" data-placeholder="Choose one or more industry segments"></div>
         </div>

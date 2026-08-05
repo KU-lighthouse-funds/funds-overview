@@ -1,4 +1,4 @@
-import { loadProgrammes, parseSegments, countMatches } from "./shared.js";
+import { loadProgrammes, countMatches, SEGMENT_OPTIONS } from "./shared.js";
 import { createMultiSelect } from "./multiselect.js";
 import { bindInfoPopover } from "./info-popover.js";
 
@@ -25,14 +25,20 @@ const STAGE_OPTIONS = [
   },
 ];
 
+function fillInfoList(listEl, items) {
+  listEl.innerHTML = items
+    .map(
+      (item) => `
+        <li>
+          <strong>${item.label}</strong>
+          <p>${item.desc}</p>
+        </li>`
+    )
+    .join("");
+}
+
 async function init() {
   const programmes = await loadProgrammes();
-
-  const segments = new Set();
-  programmes.forEach((p) => parseSegments(p).forEach((s) => segments.add(s)));
-  const segmentOptions = [...segments]
-    .sort((a, b) => a.localeCompare(b))
-    .map((s) => ({ value: s, label: s }));
 
   const countEl = document.getElementById("match-count");
   const state = { stages: [], segments: [], query: "", cvr: "all" };
@@ -44,6 +50,10 @@ async function init() {
 
   bindInfoPopover(document.getElementById("stage-info"));
 
+  const segmentList = document.getElementById("segment-info-list");
+  if (segmentList) fillInfoList(segmentList, SEGMENT_OPTIONS);
+  bindInfoPopover(document.getElementById("segment-info"));
+
   const stageMs = createMultiSelect(document.getElementById("ms-stage"), {
     options: STAGE_OPTIONS,
     placeholder: document.getElementById("ms-stage").dataset.placeholder,
@@ -54,7 +64,7 @@ async function init() {
   });
 
   const segmentMs = createMultiSelect(document.getElementById("ms-segment"), {
-    options: segmentOptions,
+    options: SEGMENT_OPTIONS,
     placeholder: document.getElementById("ms-segment").dataset.placeholder,
     onChange: (values) => {
       state.segments = values;

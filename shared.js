@@ -28,6 +28,75 @@ export function parseSegments(row) {
     .filter(Boolean);
 }
 
+/** Canonical industry segments for filters and the landing-page dropdown. */
+export const SEGMENT_OPTIONS = [
+  {
+    value: "General",
+    label: "General",
+    desc: "Cross-sector — shown for every segment you pick",
+  },
+  {
+    value: "Life Sciences",
+    label: "Life Sciences",
+    desc: "Health, biotech, medtech, neuroscience, drug discovery, care tech",
+  },
+  {
+    value: "Food & Agriculture",
+    label: "Food & Agriculture",
+    desc: "Food, agrifood, plant-based, bioresource, farming innovation",
+  },
+  {
+    value: "Quantum",
+    label: "Quantum",
+    desc: "Quantum computing, sensing, communication, quantum devices",
+  },
+  {
+    value: "Chemistry",
+    label: "Chemistry",
+    desc: "Chemistry in life science, materials, green and industrial applications",
+  },
+  {
+    value: "Physics & Materials",
+    label: "Physics & Materials",
+    desc: "Physics, materials science, nanomaterials, advanced materials",
+  },
+  {
+    value: "Deep Tech",
+    label: "Deep Tech",
+    desc: "Hard-science ventures and novel platforms not covered above",
+  },
+  {
+    value: "Tech & AI",
+    label: "Tech & AI",
+    desc: "Software, AI, robotics, engineering, drones, maritime, fintech",
+  },
+  {
+    value: "Cleantech & Energy",
+    label: "Cleantech & Energy",
+    desc: "Climate, sustainability, clean energy, environmental tech",
+  },
+  {
+    value: "Manufacturing & Industry",
+    label: "Manufacturing & Industry",
+    desc: "Production, industry 4.0, industrial processes",
+  },
+  {
+    value: "Social Impact",
+    label: "Social Impact",
+    desc: "Social innovation, education, welfare-oriented projects",
+  },
+  {
+    value: "Creative & Media",
+    label: "Creative & Media",
+    desc: "Creative industries, media, gaming, design, sports, tourism",
+  },
+  {
+    value: "Defense",
+    label: "Defense",
+    desc: "Defense tech and dual-use with defense relevance",
+  },
+];
+
 export function hasKuSupport(row) {
   const unit = (row["KU support unit"] || "").trim();
   return Boolean(unit) && !["—", "–", "-", "?"].includes(unit);
@@ -216,6 +285,7 @@ export function filterProgrammes(programmes, filters) {
       row.Opportunity,
       row.Criteria,
       row["Industrial segment"],
+      row["Segment tags"],
       row.Stage,
       row.Geography,
       row["Funding Amount"],
