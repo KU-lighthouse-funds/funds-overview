@@ -29,7 +29,7 @@ export function parseSegments(row) {
 }
 
 /** Canonical industry segments for filters and the landing-page dropdown. */
-export const SEGMENT_OPTIONS = [
+const SEGMENT_OPTIONS_RAW = [
   {
     value: "General",
     label: "General",
@@ -96,6 +96,10 @@ export const SEGMENT_OPTIONS = [
     desc: "Defense tech and dual-use with defense relevance",
   },
 ];
+
+export const SEGMENT_OPTIONS = [...SEGMENT_OPTIONS_RAW].sort((a, b) =>
+  a.label.localeCompare(b.label, "en", { sensitivity: "base" })
+);
 
 export function hasKuSupport(row) {
   const unit = (row["KU support unit"] || "").trim();
