@@ -661,7 +661,8 @@ tr.is-open .name-cell { width: 13rem; }
 
 .info-cell { width: 21rem; }
 
-.funding-lead {
+.funding-lead,
+.deadline-lead {
   margin: 0 0 0.35rem;
   font-weight: 600;
   font-size: 0.875rem;

@@ -6,6 +6,7 @@ import {
   isSignificantFunding,
   hasKuSupport,
   deadlineSortKey,
+  deadlineLead,
   escapeHtml,
   dedupeCopy,
 } from "./shared.js";
@@ -183,6 +184,7 @@ function rowHtml(row, idx) {
   const criteria = dedupeCopy(row.Criteria || "");
   const lead = isSignificantFunding(funding) ? funding : "";
   const body = quick || (lead ? "" : funding || "—");
+  const deadlineLine = deadlineLead(row.Deadline);
 
   const geo = (row.Geography || "").trim();
   const tags = cvrTags(row);
@@ -224,6 +226,7 @@ function rowHtml(row, idx) {
           <div class="expand-stack">${metaStackHtml(row, criteria)}</div>
           <div class="expand-info">
             ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
+            ${deadlineLine ? `<p class="deadline-lead">${escapeHtml(deadlineLine)}</p>` : ""}
             <p class="info-text">${escapeHtml(body)}</p>
             ${rowExtraHtml(row)}
             ${kuLine}
@@ -236,6 +239,7 @@ function rowHtml(row, idx) {
       <td class="stage-cell">${stageCell(row)}</td>
       <td class="info-cell">
         ${lead ? `<p class="funding-lead">${escapeHtml(lead)}</p>` : ""}
+        ${deadlineLine ? `<p class="deadline-lead">${escapeHtml(deadlineLine)}</p>` : ""}
         <p class="info-text clamped">${escapeHtml(body)}</p>
         ${kuLine}
         ${showMore ? `<p class="read-more">Show more</p>` : ""}

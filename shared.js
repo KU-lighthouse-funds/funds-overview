@@ -98,6 +98,24 @@ export function deadlineSortKey(text, now = new Date()) {
   return null;
 }
 
+/** Short Info-header line when a parseable deadline is still ahead; null otherwise. */
+export function deadlineLead(text, now = new Date()) {
+  const key = deadlineSortKey(text, now);
+  if (key == null) return null;
+
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  if (key < startOfToday) return null;
+
+  const raw = (text || "").trim();
+  const date = new Date(key);
+  const opts = { day: "numeric", month: "long" };
+  if (/\d{4}/.test(raw) || date.getFullYear() !== now.getFullYear()) {
+    opts.year = "numeric";
+  }
+
+  return `Deadline ${date.toLocaleDateString("en-GB", opts)}`;
+}
+
 export function escapeHtml(s) {
   return String(s)
     .replaceAll("&", "&amp;")
