@@ -171,7 +171,18 @@ thead th,
 .search-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: stretch;
   gap: 1.75rem 2.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-head {
+  flex: 1 1 auto;
+  margin-bottom: 0.65rem;
 }
 
 .field-label {
@@ -184,7 +195,7 @@ thead th,
 }
 
 .field-hint {
-  margin: 0 0 0.65rem;
+  margin: 0;
   font-size: 0.75rem;
   line-height: 1.35;
   letter-spacing: 0;
@@ -237,7 +248,10 @@ thead th,
 .disclaimer a { color: var(--champagne); }
 
 /* ——————————————— Multi-select ——————————————— */
-.ms { position: relative; }
+.ms {
+  position: relative;
+  flex: 0 0 auto;
+}
 .ms:has(.ms-toggle[aria-expanded="true"]) { z-index: 40; }
 
 .ms-toggle {
