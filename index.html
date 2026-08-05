@@ -35,8 +35,42 @@
       <div class="search-grid">
         <div class="field">
           <label class="field-label" id="stage-label">
-            Where are you on your journey?
-            <span class="why" title="Pick the stage that best matches your project today. Programmes that run across the whole journey are always included.">i</span>
+            <span class="field-label-text">Where are you on your journey?</span>
+            <span class="info-popover" id="stage-info">
+              <button type="button" class="info-trigger" aria-expanded="false"
+                      aria-controls="stage-info-panel" aria-label="Learn about stages">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 10v6M12 7h.01" />
+                </svg>
+              </button>
+              <div class="info-panel" id="stage-info-panel" hidden>
+                <p class="info-panel-title">Stages</p>
+                <ul class="info-panel-list">
+                  <li>
+                    <strong>Exploratory innovation</strong>
+                    <p>Pre-proof-of-concept — research, idea exploration, pre-company</p>
+                  </li>
+                  <li>
+                    <strong>PoC</strong>
+                    <p>Proof-of-concept / validation — testing whether the idea works</p>
+                  </li>
+                  <li>
+                    <strong>Early venture</strong>
+                    <p>Company building — pre-seed/seed, first customers, incorporation</p>
+                  </li>
+                  <li>
+                    <strong>Growth/scale</strong>
+                    <p>Post-seed scale-up — growth funding, pilots at scale, expansion</p>
+                  </li>
+                  <li>
+                    <strong>All stages</strong>
+                    <p>Not a step on the ladder — programmes and events open across the journey</p>
+                  </li>
+                </ul>
+              </div>
+            </span>
           </label>
           <div class="ms" id="ms-stage" data-placeholder="Choose one or more stages"></div>
         </div>

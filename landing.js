@@ -1,5 +1,6 @@
 import { loadProgrammes, parseSegments, countMatches } from "./shared.js";
 import { createMultiSelect } from "./multiselect.js";
+import { bindInfoPopover } from "./info-popover.js";
 
 const STAGE_OPTIONS = [
   {
@@ -40,6 +41,8 @@ async function init() {
     const n = countMatches(programmes, state);
     countEl.textContent = `${n} matching opportunit${n === 1 ? "y" : "ies"} so far`;
   }
+
+  bindInfoPopover(document.getElementById("stage-info"));
 
   const stageMs = createMultiSelect(document.getElementById("ms-stage"), {
     options: STAGE_OPTIONS,
