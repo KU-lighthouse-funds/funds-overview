@@ -129,10 +129,13 @@ thead th,
   inset: 0;
   z-index: -2;
   background: url("assets/hero-university.jpg") center 35% / cover no-repeat;
-  background: image-set(
-    url("assets/hero-university.webp") type("image/webp"),
-    url("assets/hero-university.jpg") type("image/jpeg")
-  ) center 35% / cover no-repeat;
+  background: url("assets/hero-university-sm.webp") center 35% / cover no-repeat;
+}
+
+@media (min-width: 768px) {
+  .hero-media {
+    background: url("assets/hero-university-md.webp") center 35% / cover no-repeat;
+  }
 }
 
 .hero-scrim {
