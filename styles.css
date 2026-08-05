@@ -13,8 +13,7 @@
    - Tables have no fill. The guide's full grid in the text colour was too hard
      over this much copy, so the results table keeps light blue horizontal rules
      only and separates columns with spacing.
-   - Type is Open Sans: Semibold caps for headings, Regular caps for sub-headings,
-     Regular sentence case for body. */
+   - Type uses system UI fonts for fast load (Open Sans was the original KU INNO guide choice). */
 :root {
   --red-orange: #db3b0a;
   --light-blue: #b7d7de;
@@ -28,7 +27,7 @@
   /* Light blue reads as a quiet rule on champagne, so the results table can keep
      its structure without a hard dark grid. */
   --line: var(--light-blue);
-  --font: "Open Sans", system-ui, -apple-system, sans-serif;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
