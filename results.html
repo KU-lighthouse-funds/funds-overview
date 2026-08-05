@@ -22,16 +22,14 @@
       <a class="back" href="index.html">← Back to search</a>
       <h1>Funding overview</h1>
       <p class="results-intro">
-        Search and filter grants, accelerators and programmes. Entries tagged
-        <strong>General</strong> or <strong>All stages</strong> are always shown,
-        whichever segment or stage you picked.
+        Filter type or stage in the column headers. General and All stages always show.
       </p>
     </div>
   </header>
 
   <main class="shell results-main">
     <div class="toolbar">
-      <input id="q" type="search" placeholder="Search name, criteria, keyword…" autocomplete="off" />
+      <input id="q" type="search" placeholder="Search name, criteria, keywords…" autocomplete="off" />
       <div class="seg" role="group" aria-label="Company status">
         <button type="button" data-cvr="all" aria-pressed="true">All</button>
         <button type="button" data-cvr="no-company" aria-pressed="false">No company yet</button>
@@ -48,26 +46,36 @@
         <thead>
           <tr>
             <th class="sortable" data-sort="Name">Name <span class="arrow">↕</span></th>
-            <th class="sortable" data-sort="Opportunity">Opportunity <span class="arrow">↕</span></th>
+            <th class="th-filterable sortable" data-sort="Opportunity">
+              <div class="th-head">
+                <span class="th-title">Opportunity <span class="arrow">↕</span></span>
+                <div class="col-filter" id="col-filter-opportunity"></div>
+              </div>
+            </th>
             <th class="sortable" data-sort="Industrial segment">Industry segment <span class="arrow">↕</span></th>
             <th>Criteria</th>
-            <th class="sortable" data-sort="Stage">Stage <span class="arrow">↕</span></th>
+            <th class="th-filterable sortable" data-sort="Stage">
+              <div class="th-head">
+                <span class="th-title">Stage <span class="arrow">↕</span></span>
+                <div class="col-filter" id="col-filter-stage"></div>
+              </div>
+            </th>
             <th>Info</th>
           </tr>
         </thead>
         <tbody id="results-body"></tbody>
       </table>
       <p id="empty" class="empty hidden">
-        No programmes match. <a href="index.html">Try a new search</a>.
+        No matches. <a href="index.html">Try a new search</a>.
       </p>
     </div>
   </main>
 
   <footer class="shell site-footer">
     <p>
-      Disclaimer: This data is assembled with the help of AI and may contain errors or be out of date.
-      Always verify details directly with the funding provider before applying.
-      Feedback: <a href="mailto:kly@adm.ku.dk">kly@adm.ku.dk</a>.
+      AI-assisted data — may contain errors or be out of date. Verify with the
+      funding provider before applying. Feedback:
+      <a href="mailto:kly@adm.ku.dk">kly@adm.ku.dk</a>.
     </p>
   </footer>
 

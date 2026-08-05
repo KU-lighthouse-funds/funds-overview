@@ -1,6 +1,7 @@
 import {
   loadProgrammes,
   filtersFromUrl,
+  filtersToSearchParams,
   filterProgrammes,
   parseSegments,
   isSignificantFunding,
@@ -10,13 +11,45 @@ import {
   escapeHtml,
   dedupeCopy,
 } from "./shared.js";
+import { createColumnFilter } from "./multiselect.js";
+
+function uniqueColumnValues(rows, key) {
+  return [...new Set(rows.map((r) => (r[key] || "").trim()).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, "en", { sensitivity: "base" })
+  );
+}
 
 const state = {
   all: [],
-  filters: filtersFromUrl(),
+  filters: { ...filtersFromUrl(), opportunityCol: null, stageCol: null },
   sort: { key: null, dir: 1 },
   expanded: new Set(),
+  columnFilters: null,
 };
+
+function filtersForColumnOptions(excludeKey) {
+  return { ...state.filters, [excludeKey]: null };
+}
+
+function updateColumnFilters() {
+  if (!state.columnFilters) return;
+
+  const oppRows = filterProgrammes(state.all, filtersForColumnOptions("opportunityCol"));
+  const oppOpts = uniqueColumnValues(oppRows, "Opportunity").map((v) => ({
+    value: v,
+    label: v,
+  }));
+  state.columnFilters.opportunity.setOptions(oppOpts, { silent: true });
+  state.filters.opportunityCol = state.columnFilters.opportunity.values();
+
+  const stageRows = filterProgrammes(state.all, filtersForColumnOptions("stageCol"));
+  const stageOpts = uniqueColumnValues(stageRows, "Stage").map((v) => ({
+    value: v,
+    label: v,
+  }));
+  state.columnFilters.stage.setOptions(stageOpts, { silent: true });
+  state.filters.stageCol = state.columnFilters.stage.values();
+}
 
 function cvrTags(row) {
   const atApplication = (row["CVR at application"] || "Any").trim();
@@ -89,7 +122,7 @@ function kuSupportHtml(row) {
   const unit = (row["KU support unit"] || "").trim();
   const parts = [kuUnitBadge(unit)];
 
-  if (row["KU faculty focus"]) {
+  if (row["KU faculty focus"] && !/^pre-?award$/i.test(unit)) {
     parts.push(`<span class="ku-faculty">${escapeHtml(row["KU faculty focus"])}</span>`);
   }
 
@@ -133,6 +166,26 @@ function whoToAskHtml(row) {
   return escapeHtml(content.text);
 }
 
+function fundContactHtml(row) {
+  const raw = (row["Fund contact email"] || "").trim();
+  if (!raw) return "";
+  const parts = raw
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts
+    .map((part) => {
+      const at = part.lastIndexOf(":");
+      if (at === -1) {
+        return mailLink({ label: "", address: part }, false);
+      }
+      const label = part.slice(0, at).trim();
+      const address = part.slice(at + 1).trim();
+      return mailLink({ label, address }, Boolean(label));
+    })
+    .join(" · ");
+}
+
 function rowExtraHtml(row) {
   const blocks = [];
   if (row.Deadline) {
@@ -141,6 +194,10 @@ function rowExtraHtml(row) {
   const who = whoToAskHtml(row);
   if (who) {
     blocks.push(`<div><h4>Who to ask</h4><p>${who}</p></div>`);
+  }
+  const fund = fundContactHtml(row);
+  if (fund) {
+    blocks.push(`<div><h4>Fund contact</h4><p>${fund}</p></div>`);
   }
   const funding = (row["Funding Amount"] || "").trim();
   const lead = isSignificantFunding(funding) ? funding : "";
@@ -197,6 +254,7 @@ function rowHtml(row, idx) {
     Boolean(row.Deadline) ||
     hasKuSupport(row) ||
     Boolean(whoToAskContent(row)) ||
+    Boolean((row["Fund contact email"] || "").trim()) ||
     (funding && !lead);
   const showMore = !open && (body.length > 90 || hasExtra);
 
@@ -206,11 +264,22 @@ function rowHtml(row, idx) {
         <div class="name-row">
           <button type="button" class="caret" data-toggle="${id}"
                   aria-expanded="${open}" aria-label="${open ? "Collapse" : "Expand"} details">▶</button>
-          <span>${
+          ${
             row.Link
-              ? `<a href="${escapeHtml(row.Link)}" target="_blank" rel="noopener">${escapeHtml(row.Name)}</a>`
-              : escapeHtml(row.Name)
-          }</span>
+              ? `<div class="name-main">
+                  <a href="${escapeHtml(row.Link)}" class="name-link">${escapeHtml(row.Name)}</a>
+                  <a href="${escapeHtml(row.Link)}" class="name-outlink" target="_blank" rel="noopener"
+                     aria-label="${escapeHtml(row.Name)} — opens in new tab">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
+                </div>`
+              : `<span class="name-plain">${escapeHtml(row.Name)}</span>`
+          }
         </div>
         <p class="name-sub">
           ${geo ? `<span class="geo">${escapeHtml(geo)}</span>` : ""}
@@ -300,7 +369,19 @@ function resetSort() {
   paint();
 }
 
+function syncUrl() {
+  const qs = filtersToSearchParams(state.filters).toString();
+  const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+  window.history.replaceState(null, "", url);
+}
+
+function applyFiltersAndPaint() {
+  state.expanded.clear();
+  syncUrl();
+  paint();
+}
 function paint() {
+  updateColumnFilters();
   const matched = sorted(filterProgrammes(state.all, state.filters));
   const body = document.getElementById("results-body");
   const empty = document.getElementById("empty");
@@ -337,27 +418,47 @@ function paint() {
 async function init() {
   state.all = await loadProgrammes();
 
+  state.columnFilters = {
+    opportunity: createColumnFilter(document.getElementById("col-filter-opportunity"), {
+      label: "Opportunity",
+      options: [],
+      onChange: (values) => {
+        state.filters.opportunityCol = values;
+        applyFiltersAndPaint();
+      },
+    }),
+    stage: createColumnFilter(document.getElementById("col-filter-stage"), {
+      label: "Stage",
+      options: [],
+      onChange: (values) => {
+        state.filters.stageCol = values;
+        applyFiltersAndPaint();
+      },
+    }),
+  };
+
   const q = document.getElementById("q");
   q.value = state.filters.query || "";
   q.addEventListener("input", () => {
     state.filters.query = q.value.trim();
-    state.expanded.clear();
-    paint();
+    applyFiltersAndPaint();
   });
 
   document.querySelectorAll(".seg button").forEach((btn) => {
+    const active = btn.dataset.cvr === (state.filters.cvr || "all");
+    btn.setAttribute("aria-pressed", String(active));
     btn.addEventListener("click", () => {
       state.filters.cvr = btn.dataset.cvr;
       document
         .querySelectorAll(".seg button")
         .forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
-      state.expanded.clear();
-      paint();
+      applyFiltersAndPaint();
     });
   });
 
   document.querySelectorAll("th.sortable").forEach((th) => {
-    th.addEventListener("click", () => {
+    th.addEventListener("click", (event) => {
+      if (event.target.closest(".col-filter")) return;
       const key = th.dataset.sort;
       state.sort =
         state.sort.key === key

@@ -28,12 +28,36 @@ export function parseSegments(row) {
     .filter(Boolean);
 }
 
+/** Innovation journey stages for filters and the landing-page dropdown. */
+export const STAGE_OPTIONS = [
+  {
+    value: "Exploratory innovation",
+    label: "Exploratory innovation",
+    desc: "Usually TRL 1–3. Research and early ideas before structured commercial testing.",
+  },
+  {
+    value: "Commercial validation",
+    label: "Commercial validation",
+    desc: "Usually TRL 3–6. Maturing research toward market relevance; typically university employees and pre-CVR.",
+  },
+  {
+    value: "Venture formation",
+    label: "Venture formation",
+    desc: "Usually TRL 3–7. Founder-led commercialisation with incorporation as a planned outcome, not a prerequisite.",
+  },
+  {
+    value: "Growth/scale",
+    label: "Growth/scale",
+    desc: "Usually TRL 8–10. Scaling proven solutions — export, deployment, and market expansion.",
+  },
+];
+
 /** Canonical industry segments for filters and the landing-page dropdown. */
 const SEGMENT_OPTIONS_RAW = [
   {
     value: "General",
     label: "General",
-    desc: "Cross-sector — shown for every segment you pick",
+    desc: "Always shown regardless of segment",
   },
   {
     value: "Life Sciences",
@@ -256,9 +280,20 @@ export function filtersFromUrl() {
   return {
     stages: params.getAll("stage"),
     segments: params.getAll("segment"),
+    opportunities: params.getAll("opportunity"),
     query: (params.get("q") || "").trim(),
     cvr: params.get("cvr") || "all",
   };
+}
+
+export function filtersToSearchParams(filters) {
+  const params = new URLSearchParams();
+  (filters.stages || []).forEach((v) => params.append("stage", v));
+  (filters.segments || []).forEach((v) => params.append("segment", v));
+  (filters.opportunities || []).forEach((v) => params.append("opportunity", v));
+  if (filters.query) params.set("q", filters.query);
+  if (filters.cvr && filters.cvr !== "all") params.set("cvr", filters.cvr);
+  return params;
 }
 
 export function filterProgrammes(programmes, filters) {
@@ -277,6 +312,21 @@ export function filterProgrammes(programmes, filters) {
       // "General" programmes are relevant to every segment, so they always show.
       const isGeneral = segs.some((s) => s.toLowerCase() === "general");
       if (!isGeneral && !filters.segments.some((s) => segs.includes(s))) return false;
+    }
+
+    if (filters.opportunities?.length) {
+      const type = (row.Opportunity || "").trim();
+      if (!filters.opportunities.includes(type)) return false;
+    }
+
+    if (filters.opportunityCol != null) {
+      const type = (row.Opportunity || "").trim();
+      if (!filters.opportunityCol.includes(type)) return false;
+    }
+
+    if (filters.stageCol != null) {
+      const stage = (row.Stage || "").trim();
+      if (!filters.stageCol.includes(stage)) return false;
     }
 
     if (cvr !== "all") {
@@ -301,6 +351,7 @@ export function filterProgrammes(programmes, filters) {
       row["KU faculty focus"],
       row["KU contact email"],
       row["KU contact hint"],
+      row["Fund contact email"],
       row["PPT notes"],
     ]
       .join(" ")

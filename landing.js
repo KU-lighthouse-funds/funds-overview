@@ -1,28 +1,5 @@
-import { loadProgrammes, countMatches, SEGMENT_OPTIONS } from "./shared.js";
+import { loadProgrammes, countMatches, SEGMENT_OPTIONS, STAGE_OPTIONS } from "./shared.js";
 import { createMultiSelect } from "./multiselect.js";
-
-const STAGE_OPTIONS = [
-  {
-    value: "Exploratory innovation",
-    label: "Exploratory innovation",
-    desc: "Pre-proof-of-concept — research, idea exploration, pre-company",
-  },
-  {
-    value: "PoC",
-    label: "PoC",
-    desc: "Proof-of-concept / validation — testing whether the idea works",
-  },
-  {
-    value: "Early venture",
-    label: "Early venture",
-    desc: "Company building — pre-seed/seed, first customers, incorporation",
-  },
-  {
-    value: "Growth/scale",
-    label: "Growth/scale",
-    desc: "Post-seed scale-up — growth funding, pilots at scale, expansion",
-  },
-];
 
 async function init() {
   const programmes = await loadProgrammes();
@@ -32,7 +9,7 @@ async function init() {
 
   function updateCount() {
     const n = countMatches(programmes, state);
-    countEl.textContent = `${n} matching opportunit${n === 1 ? "y" : "ies"} so far`;
+    countEl.textContent = `${n} match${n === 1 ? "" : "es"} so far`;
   }
 
   const stageMs = createMultiSelect(document.getElementById("ms-stage"), {

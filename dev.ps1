@@ -18,7 +18,7 @@ Write-Host "Starting local dev server..." -ForegroundColor Green
 Write-Host "  Landing:  http://localhost:$Port/" -ForegroundColor DarkGray
 Write-Host "  Results:  http://localhost:$Port/results.html" -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "Edit HTML/CSS/JS in this folder — save and the page reloads." -ForegroundColor Yellow
+Write-Host "Edit HTML/CSS/JS in this folder - save and the page reloads." -ForegroundColor Yellow
 Write-Host "When happy: git add/commit/push from funds-overview-site" -ForegroundColor Yellow
 Write-Host ""
 
