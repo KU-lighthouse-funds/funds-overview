@@ -690,7 +690,7 @@ tbody tr.is-open > td { background: rgba(183, 215, 222, 0.5); }
 
 .segment-cell { width: 8.5rem; }
 
-/* Expanded row: name | 50% stack | 50% info */
+/* Expanded row: name | ⅓ stack | ⅔ info */
 .expand-split-cell {
   padding: 1rem 1.1rem;
   vertical-align: top;
@@ -698,9 +698,23 @@ tbody tr.is-open > td { background: rgba(183, 215, 222, 0.5); }
 
 .expand-split {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 1.25rem 2rem;
   align-items: start;
+}
+
+.expand-info {
+  min-width: 0;
+}
+
+.expand-info .row-extra-grid.cols-2,
+.expand-info .row-extra-grid.cols-3 {
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.expand-info .ku-mail,
+.expand-info .row-extra-grid p {
+  overflow-wrap: anywhere;
 }
 
 .expand-stack .meta-stack {
