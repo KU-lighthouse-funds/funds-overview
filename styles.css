@@ -115,14 +115,15 @@ thead th,
 /* The hero photo fades to black rather than dark blue, by preference. */
 .page-landing {
   background: #000000;
-  --landing-gutter: 1.25rem;
+  --landing-col: min(1180px, calc(100% - 2.5rem));
 }
 
-/* Side inset on all non-phone viewports — not capped at 1440px, so 1920px
-   laptops get the same treatment as 1366px ones. */
+/* Centred content column. Using vw rather than a fixed cap means every screen
+   above phone size keeps visible blank space at the sides, so the hero text and
+   search card never run edge to edge on a laptop. */
 @media (min-width: 861px) {
   .page-landing {
-    --landing-gutter: clamp(2rem, 5vw, 7rem);
+    --landing-col: min(1060px, 78vw);
   }
 }
 
@@ -131,7 +132,10 @@ thead th,
   min-height: 72vh;
   display: flex;
   align-items: center;
-  padding: 6.5rem 0 4.5rem;
+  /* The bottom padding reserves room for the search card's negative margin.
+     On tall screens 72vh already covers it; on short laptops the padding grows
+     the hero instead of letting the card slide over the lede. */
+  padding: 6.5rem 0 13rem;
   isolation: isolate;
 }
 
@@ -165,11 +169,11 @@ thead th,
 }
 
 .hero .brandbar .shell {
-  width: min(1180px, calc(100% - 2 * var(--landing-gutter)));
+  width: var(--landing-col);
 }
 
 .hero-copy {
-  width: min(1180px, calc(100% - 2 * var(--landing-gutter)));
+  width: var(--landing-col);
   margin: 0 auto;
   color: var(--champagne);
 }
@@ -184,7 +188,7 @@ thead th,
 .hero h1 {
   margin: 0 0 1rem;
   max-width: 54rem;
-  font-size: clamp(2.4rem, 5.6vw, 4.5rem);
+  font-size: clamp(2.2rem, 4.4vw, 4.5rem);
   line-height: 1.05;
   color: var(--champagne);
 }
@@ -203,11 +207,10 @@ thead th,
   z-index: 2;
   margin-top: -10.5rem;
   padding-bottom: 3.5rem;
-  padding-inline: var(--landing-gutter);
 }
 
 .search-card {
-  width: min(1000px, 100%);
+  width: min(880px, var(--landing-col));
   margin: 0 auto;
   background: var(--champagne);
   padding: 2rem 2.25rem 1.5rem;
@@ -282,7 +285,7 @@ thead th,
 .btn-search svg { width: 1rem; height: 1rem; }
 
 .disclaimer {
-  width: min(880px, 100%);
+  width: min(760px, var(--landing-col));
   margin: 1.5rem auto 0;
   text-align: center;
   font-size: 0.8rem;
@@ -1074,14 +1077,10 @@ tr.is-open .name-cell { width: 13rem; }
 }
 
 @media (max-width: 860px) {
-  .page-landing {
-    --landing-gutter: 1.25rem;
-  }
-
   .search-grid { grid-template-columns: 1fr; }
   .search-card { padding: 1.5rem 1.25rem 1.25rem; }
   .search-wrap { margin-top: -6rem; }
-  .hero { min-height: 58vh; padding-bottom: 4rem; }
+  .hero { min-height: 58vh; padding-bottom: 8rem; }
   .field-label { min-height: 0; }
   .search-foot { flex-direction: column; align-items: stretch; }
   .btn-search { justify-content: center; }
