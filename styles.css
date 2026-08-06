@@ -115,12 +115,14 @@ thead th,
 /* The hero photo fades to black rather than dark blue, by preference. */
 .page-landing {
   background: #000000;
-  --landing-gutter: 1.5rem;
+  --landing-gutter: 1.25rem;
 }
 
-@media (min-width: 861px) and (max-width: 1440px) {
+/* Side inset on all non-phone viewports — not capped at 1440px, so 1920px
+   laptops get the same treatment as 1366px ones. */
+@media (min-width: 861px) {
   .page-landing {
-    --landing-gutter: clamp(2.5rem, 7vw, 5.5rem);
+    --landing-gutter: clamp(2rem, 5vw, 7rem);
   }
 }
 
