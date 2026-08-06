@@ -113,7 +113,16 @@ thead th,
 
 /* ——————————————— Landing hero ——————————————— */
 /* The hero photo fades to black rather than dark blue, by preference. */
-.page-landing { background: #000000; }
+.page-landing {
+  background: #000000;
+  --landing-gutter: 1.5rem;
+}
+
+@media (min-width: 861px) and (max-width: 1440px) {
+  .page-landing {
+    --landing-gutter: clamp(2.5rem, 7vw, 5.5rem);
+  }
+}
 
 .hero {
   position: relative;
@@ -153,8 +162,12 @@ thead th,
   );
 }
 
+.hero .brandbar .shell {
+  width: min(1180px, calc(100% - 2 * var(--landing-gutter)));
+}
+
 .hero-copy {
-  width: min(1180px, calc(100% - 3rem));
+  width: min(1180px, calc(100% - 2 * var(--landing-gutter)));
   margin: 0 auto;
   color: var(--champagne);
 }
@@ -188,10 +201,11 @@ thead th,
   z-index: 2;
   margin-top: -10.5rem;
   padding-bottom: 3.5rem;
+  padding-inline: var(--landing-gutter);
 }
 
 .search-card {
-  width: min(1000px, calc(100% - 3rem));
+  width: min(1000px, 100%);
   margin: 0 auto;
   background: var(--champagne);
   padding: 2rem 2.25rem 1.5rem;
@@ -266,7 +280,7 @@ thead th,
 .btn-search svg { width: 1rem; height: 1rem; }
 
 .disclaimer {
-  width: min(880px, calc(100% - 3rem));
+  width: min(880px, 100%);
   margin: 1.5rem auto 0;
   text-align: center;
   font-size: 0.8rem;
@@ -1057,77 +1071,11 @@ tr.is-open .name-cell { width: 13rem; }
   color: var(--dark-grey);
 }
 
-/* Landing — laptops and short viewports (between large desktop and phone).
-   Full desktop keeps the dramatic overlap; here we shrink type and pull the
-   search card down so the lede is not hidden behind it. */
-@media (max-width: 1280px), (max-height: 860px) {
-  .page-landing .hero {
-    min-height: clamp(17rem, 50vh, 26rem);
-    padding: 4.75rem 0 2.75rem;
-  }
-
-  .page-landing .brandbar img {
-    height: 2.85rem;
-  }
-
-  .page-landing .eyebrow {
-    margin-bottom: 0.65rem;
-    font-size: 0.72rem;
-  }
-
-  .page-landing .hero h1 {
-    font-size: clamp(1.85rem, 3.6vw + 0.4rem, 2.85rem);
-    line-height: 1.08;
-    margin-bottom: 0.75rem;
-  }
-
-  .page-landing .hero .lede {
-    font-size: 1.05rem;
-    line-height: 1.45;
-    max-width: 34rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .page-landing .search-wrap {
-    margin-top: -4.25rem;
-  }
-
-  .page-landing .search-card {
-    padding: 1.5rem 1.75rem 1.2rem;
-  }
-
-  .page-landing .search-grid {
-    gap: 1.25rem 1.75rem;
-  }
-
-  .page-landing .search-foot {
-    margin-top: 1.35rem;
-    padding-top: 1.1rem;
-  }
-}
-
-/* Very short laptop screens (e.g. 1366×768 with browser chrome) */
-@media (max-height: 760px) and (min-width: 861px) {
-  .page-landing .hero {
-    min-height: auto;
-    padding: 4.25rem 0 2rem;
-  }
-
-  .page-landing .hero h1 {
-    font-size: clamp(1.65rem, 2.8vw + 0.5rem, 2.35rem);
-  }
-
-  .page-landing .hero .lede {
-    font-size: 0.98rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .page-landing .search-wrap {
-    margin-top: -1rem;
-  }
-}
-
 @media (max-width: 860px) {
+  .page-landing {
+    --landing-gutter: 1.25rem;
+  }
+
   .search-grid { grid-template-columns: 1fr; }
   .search-card { padding: 1.5rem 1.25rem 1.25rem; }
   .search-wrap { margin-top: -6rem; }
