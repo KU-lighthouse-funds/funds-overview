@@ -162,7 +162,7 @@ function kuUnitBadge(unit) {
 
 const LIGHTHOUSE_EMAIL = "lighthouse@ku.dk";
 
-/** Compact KU line: unit badge, optional guidance page, then contact email(s). */
+/** Compact KU line: unit badge, then · linked address(es) — same for every programme. */
 function kuSupportHtml(row) {
   const unit = (row["KU support unit"] || "").trim();
   const parts = [kuUnitBadge(unit)];
@@ -171,20 +171,8 @@ function kuSupportHtml(row) {
     parts.push(`<span class="ku-faculty">${escapeHtml(row["KU faculty focus"])}</span>`);
   }
 
-  const kuPage = (row["KU support page"] || "").trim();
-  if (kuPage) {
-    parts.push(
-      `<a href="${escapeHtml(kuPage)}" class="ku-mail" target="_blank" rel="noopener">Lighthouse guidance</a>`
-    );
-  }
-
   if (/^lighthouse$/i.test(unit)) {
-    const email = (row["KU contact email"] || "").trim();
-    const address =
-      email && email.toLowerCase() !== LIGHTHOUSE_EMAIL.toLowerCase()
-        ? email
-        : LIGHTHOUSE_EMAIL;
-    parts.push(mailLink({ label: "", address }, false));
+    parts.push(mailLink({ label: "", address: LIGHTHOUSE_EMAIL }, false));
   } else if (/^pre-?award$/i.test(unit)) {
     const contacts = kuContacts(row);
     const useLabel = contacts.length > 1;
@@ -200,25 +188,31 @@ function kuSupportMobileHtml(row) {
   return `<span class="mobile-card-ku-label">KU support</span> ${kuUnitBadge(unit)}`;
 }
 
-function whoToAskContent(row) {
-  const hint = (row["KU contact hint"] || "").trim();
-  const email = (row["KU contact email"] || "").trim();
+function dedicatedKuInbox(row) {
   const unit = (row["KU support unit"] || "").trim();
-
-  // Dedicated Lighthouse inboxes are shown on the KU support line — not again under Who to ask.
+  const email = (row["KU contact email"] || "").trim();
   if (
     /^lighthouse$/i.test(unit) &&
     email &&
     email.toLowerCase() !== LIGHTHOUSE_EMAIL.toLowerCase()
   ) {
-    return null;
+    return email;
   }
+  return "";
+}
+
+function whoToAskContent(row) {
+  const hint = (row["KU contact hint"] || "").trim();
+  const email = (row["KU contact email"] || "").trim();
+  const unit = (row["KU support unit"] || "").trim();
+
+  // Dedicated Lighthouse inboxes live under KU contact & information.
+  if (dedicatedKuInbox(row)) return null;
 
   if (!hint || /^(ku lighthouse|preaward rso)\.?$/i.test(hint)) {
     return null;
   }
 
-  // Skip hints that only repeat a dedicated Lighthouse inbox already on KU support.
   if (
     /^lighthouse$/i.test(unit) &&
     email &&
@@ -260,6 +254,22 @@ function fundContactHtml(row) {
     .join(" · ");
 }
 
+/** Programme-specific KU inbox + Lighthouse guidance — separate from the KU support line. */
+function kuContactInfoHtml(row) {
+  const parts = [];
+  const page = (row["KU support page"] || "").trim();
+  if (page) {
+    parts.push(
+      `<a href="${escapeHtml(page)}" class="ku-mail" target="_blank" rel="noopener">Lighthouse guidance</a>`
+    );
+  }
+  const inbox = dedicatedKuInbox(row);
+  if (inbox) {
+    parts.push(mailLink({ label: "", address: inbox }, false));
+  }
+  return parts.join(" · ");
+}
+
 function rowExtraHtml(row) {
   const blocks = [];
   if (row.Deadline) {
@@ -268,6 +278,10 @@ function rowExtraHtml(row) {
   const who = whoToAskHtml(row);
   if (who) {
     blocks.push(`<div><h4>Who to ask</h4><p>${who}</p></div>`);
+  }
+  const kuInfo = kuContactInfoHtml(row);
+  if (kuInfo) {
+    blocks.push(`<div><h4>KU contact &amp; information</h4><p>${kuInfo}</p></div>`);
   }
   const fund = fundContactHtml(row);
   if (fund) {
@@ -380,6 +394,7 @@ function rowHtml(row, idx) {
     Boolean(row.Deadline) ||
     hasKuSupport(row) ||
     Boolean(whoToAskContent(row)) ||
+    Boolean(kuContactInfoHtml(row)) ||
     Boolean((row["Fund contact email"] || "").trim()) ||
     (funding && !lead);
   const showMore = !open && (body.length > 90 || hasExtra);
