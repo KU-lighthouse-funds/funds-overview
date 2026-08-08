@@ -191,11 +191,16 @@ function kuSupportMobileHtml(row) {
 
 function whoToAskContent(row) {
   const hint = (row["KU contact hint"] || "").trim();
-  const email = (row["KU contact email"] || "").trim().toLowerCase();
+  const email = (row["KU contact email"] || "").trim();
   const unit = (row["KU support unit"] || "").trim();
 
-  if (/^lighthouse$/i.test(unit) && email === POC_EMAIL.toLowerCase()) {
-    return { kind: "poc" };
+  // Dedicated Lighthouse programme inbox (POC, Innoexplorer, …) — not lighthouse@ku.dk
+  if (
+    /^lighthouse$/i.test(unit) &&
+    email &&
+    email.toLowerCase() !== LIGHTHOUSE_EMAIL.toLowerCase()
+  ) {
+    return { kind: "mail", address: email };
   }
 
   if (!hint || /^(ku lighthouse|preaward rso)\.?$/i.test(hint)) {
@@ -203,7 +208,7 @@ function whoToAskContent(row) {
   }
 
   if (/^lighthouse$/i.test(unit) && /poc@adm\.ku\.dk/i.test(hint)) {
-    return { kind: "poc" };
+    return { kind: "mail", address: POC_EMAIL };
   }
 
   return { kind: "hint", text: hint };
@@ -212,8 +217,8 @@ function whoToAskContent(row) {
 function whoToAskHtml(row) {
   const content = whoToAskContent(row);
   if (!content) return "";
-  if (content.kind === "poc") {
-    return mailLink({ label: "", address: POC_EMAIL }, false);
+  if (content.kind === "mail") {
+    return mailLink({ label: "", address: content.address }, false);
   }
   return escapeHtml(content.text);
 }
@@ -238,6 +243,12 @@ function fundContactHtml(row) {
     .join(" · ");
 }
 
+function kuSupportPageHtml(row) {
+  const href = (row["KU support page"] || "").trim();
+  if (!href) return "";
+  return `<a href="${escapeHtml(href)}" class="ku-mail" target="_blank" rel="noopener">Lighthouse guidance</a>`;
+}
+
 function rowExtraHtml(row) {
   const blocks = [];
   if (row.Deadline) {
@@ -246,6 +257,10 @@ function rowExtraHtml(row) {
   const who = whoToAskHtml(row);
   if (who) {
     blocks.push(`<div><h4>Who to ask</h4><p>${who}</p></div>`);
+  }
+  const kuPage = kuSupportPageHtml(row);
+  if (kuPage) {
+    blocks.push(`<div><h4>KU page</h4><p>${kuPage}</p></div>`);
   }
   const fund = fundContactHtml(row);
   if (fund) {
@@ -358,6 +373,7 @@ function rowHtml(row, idx) {
     Boolean(row.Deadline) ||
     hasKuSupport(row) ||
     Boolean(whoToAskContent(row)) ||
+    Boolean((row["KU support page"] || "").trim()) ||
     Boolean((row["Fund contact email"] || "").trim()) ||
     (funding && !lead);
   const showMore = !open && (body.length > 90 || hasExtra);
