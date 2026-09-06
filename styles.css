@@ -295,6 +295,15 @@ thead th,
 
 .disclaimer a { color: var(--champagne); }
 
+[data-updated-stamp]:empty {
+  display: none;
+}
+
+[data-updated-stamp]:not(:empty) {
+  display: block;
+  margin-top: 0.35rem;
+}
+
 /* ——————————————— Multi-select ——————————————— */
 .ms {
   position: relative;

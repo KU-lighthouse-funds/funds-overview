@@ -277,20 +277,45 @@ export function dedupeCopy(text) {
 
 let programmesCache = null;
 let programmesDataVersion = null;
+let programmesUpdated = null;
 let programmesPromise = null;
 let programmesRevalidatePromise = null;
 const programmesListeners = new Set();
-const PROGRAMMES_CACHE_KEY = "ku-funds-programmes-v4";
-const PROGRAMMES_CACHE_SCHEMA = 4;
+const PROGRAMMES_CACHE_KEY = "ku-funds-programmes-v5";
+const PROGRAMMES_CACHE_SCHEMA = 5;
 
 function normalizeProgrammesPayload(raw) {
   if (Array.isArray(raw)) {
-    return { version: `legacy-${raw.length}`, programmes: raw };
+    return { version: `legacy-${raw.length}`, updated: null, programmes: raw };
   }
   return {
     version: String(raw?.version || raw?.programmes?.length || 0),
+    updated: typeof raw?.updated === "string" && raw.updated ? raw.updated : null,
     programmes: Array.isArray(raw?.programmes) ? raw.programmes : [],
   };
+}
+
+function formatDataUpdated(isoDate) {
+  if (!isoDate) return "";
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!match) return isoDate;
+  const d = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12));
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function setProgrammesUpdated(updated) {
+  if (!updated) return;
+  programmesUpdated = updated;
+  const label = formatDataUpdated(updated);
+  if (!label) return;
+  document.querySelectorAll("[data-updated-stamp]").forEach((el) => {
+    el.textContent = `This data was last updated ${label}.`;
+  });
 }
 
 function readProgrammesCache() {
@@ -303,6 +328,7 @@ function readProgrammesCache() {
         continue;
       }
       programmesDataVersion = parsed.version;
+      if (parsed.updated) setProgrammesUpdated(parsed.updated);
       return parsed.data;
     } catch {
       /* unavailable or corrupt */
@@ -311,9 +337,15 @@ function readProgrammesCache() {
   return null;
 }
 
-function writeProgrammesCache(version, data) {
+function writeProgrammesCache(version, data, updated = programmesUpdated) {
   programmesDataVersion = version;
-  const payload = JSON.stringify({ schema: PROGRAMMES_CACHE_SCHEMA, version, data });
+  if (updated) programmesUpdated = updated;
+  const payload = JSON.stringify({
+    schema: PROGRAMMES_CACHE_SCHEMA,
+    version,
+    updated: programmesUpdated,
+    data,
+  });
   for (const store of [localStorage, sessionStorage]) {
     try {
       store.setItem(PROGRAMMES_CACHE_KEY, payload);
@@ -329,14 +361,14 @@ async function fetchProgrammesFromNetwork() {
       const res = await fetch("data/programmes.json");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const raw = await res.json();
-      const { version, programmes } = normalizeProgrammesPayload(raw);
-      return { version, programmes };
+      const { version, updated, programmes } = normalizeProgrammesPayload(raw);
+      return { version, updated, programmes };
     } catch (err) {
       if (attempt === 1) throw err;
       await new Promise((resolve) => setTimeout(resolve, 600));
     }
   }
-  return { version: "0", programmes: [] };
+  return { version: "0", updated: null, programmes: [] };
 }
 
 function notifyProgrammesUpdated(programmes) {
@@ -353,10 +385,14 @@ function revalidateProgrammesCache(cachedVersion) {
   if (programmesRevalidatePromise) return programmesRevalidatePromise;
 
   programmesRevalidatePromise = fetchProgrammesFromNetwork()
-    .then(({ version, programmes }) => {
-      if (cachedVersion && cachedVersion === version) return programmesCache;
+    .then(({ version, updated, programmes }) => {
+      if (updated) setProgrammesUpdated(updated);
+      if (cachedVersion && cachedVersion === version) {
+        writeProgrammesCache(version, programmesCache, updated || programmesUpdated);
+        return programmesCache;
+      }
       programmesCache = programmes;
-      writeProgrammesCache(version, programmes);
+      writeProgrammesCache(version, programmes, updated || programmesUpdated);
       notifyProgrammesUpdated(programmes);
       return programmes;
     })
@@ -400,9 +436,10 @@ export function loadProgrammes() {
 
   if (!programmesPromise) {
     programmesPromise = fetchProgrammesFromNetwork()
-      .then(({ version, programmes }) => {
+      .then(({ version, updated, programmes }) => {
         programmesCache = programmes;
-        writeProgrammesCache(version, programmes);
+        if (updated) setProgrammesUpdated(updated);
+        writeProgrammesCache(version, programmes, updated || programmesUpdated);
         return programmes;
       })
       .finally(() => {

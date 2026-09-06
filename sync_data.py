@@ -2,6 +2,7 @@
 import csv
 import hashlib
 import json
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -15,14 +16,15 @@ def main() -> None:
 
     programmes_json = json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
     version = hashlib.sha256(programmes_json.encode()).hexdigest()[:16]
-    payload = {"version": version, "programmes": rows}
+    updated = date.today().isoformat()
+    payload = {"version": version, "updated": updated, "programmes": rows}
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(
         json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
-    print(f"Wrote {len(rows)} programmes (version {version}) -> {OUT}")
+    print(f"Wrote {len(rows)} programmes (version {version}, updated {updated}) -> {OUT}")
 
 
 if __name__ == "__main__":
