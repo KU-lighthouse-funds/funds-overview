@@ -1,4 +1,4 @@
-# KU Lighthouse — Funding overview
+# UCPH Lighthouse — Funding overview
 
 Public searchable overview of grants and programmes for founders and researchers.
 
@@ -6,10 +6,10 @@ Public searchable overview of grants and programmes for founders and researchers
 
 ## Design
 
-Layout follows the original Lovable app; everything visual follows the KU INNO design guide
+Layout follows the original Lovable app; everything visual follows the UCPH INNO design guide
 (`brand directions.pptx` in the parent folder).
 
-**Palette** — only these six, plus purple as the KU Lighthouse marker:
+**Palette** — only these six, plus purple as the UCPH Lighthouse marker:
 
 | | |
 |---|---|
@@ -17,7 +17,7 @@ Layout follows the original Lovable app; everything visual follows the KU INNO d
 | Light blue | `#B7D7DE` |
 | Champagne | `#FEFAF2` |
 | Dark blue | `#122947` |
-| KU red | `#901A1E` |
+| UCPH red | `#901A1E` |
 | Dark grey | `#3D3D3D` |
 | Purple (Lighthouse only) | `#C6C5FF` |
 

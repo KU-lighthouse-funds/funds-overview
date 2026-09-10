@@ -143,7 +143,7 @@ export const SEGMENT_OPTIONS = [...SEGMENT_OPTIONS_RAW].sort((a, b) => {
 });
 
 export function hasKuSupport(row) {
-  const unit = (row["KU support unit"] || "").trim();
+  const unit = (row["UCPH support unit"] || "").trim();
   return Boolean(unit) && !["—", "–", "-", "?"].includes(unit);
 }
 
@@ -281,7 +281,7 @@ let programmesUpdated = null;
 let programmesPromise = null;
 let programmesRevalidatePromise = null;
 const programmesListeners = new Set();
-const PROGRAMMES_CACHE_KEY = "ku-funds-programmes-v5";
+const PROGRAMMES_CACHE_KEY = "ucph-funds-programmes-v6";
 const PROGRAMMES_CACHE_SCHEMA = 5;
 
 function normalizeProgrammesPayload(raw) {
@@ -529,10 +529,10 @@ export function filterProgrammes(programmes, filters) {
       row["Funding Amount"],
       row["Quick info"],
       row.Deadline,
-      row["KU support unit"],
-      row["KU faculty focus"],
-      row["KU contact email"],
-      row["KU contact hint"],
+      row["UCPH support unit"],
+      row["UCPH faculty focus"],
+      row["UCPH contact email"],
+      row["UCPH contact hint"],
       row["Fund contact email"],
     ]
       .join(" ")

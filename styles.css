@@ -1,5 +1,5 @@
-/* KU Lighthouse funding overview.
-   Layout follows the original Lovable app; everything visual follows the KU INNO
+/* UCPH Lighthouse funding overview.
+   Layout follows the original Lovable app; everything visual follows the UCPH INNO
    design guide (brand directions.pptx):
 
    - Palette is the six named brand colours, with one exception: the landing hero
@@ -854,7 +854,7 @@ tr.is-open .name-cell { width: 13rem; }
   text-transform: uppercase;
 }
 
-/* Small coloured hints — Pre-company, CVR, KU unit, etc. */
+/* Small coloured hints — Pre-company, CVR, UCPH unit, etc. */
 .pill {
   display: inline-block;
   padding: 0.12rem 0.42rem;

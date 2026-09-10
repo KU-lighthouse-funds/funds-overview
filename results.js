@@ -132,7 +132,7 @@ function stageCell(row) {
 
 /** "a@ku.dk" or "Nørre: a@ku.dk | Søndre: b@ku.dk" -> [{ label, address }]. */
 function kuContacts(row) {
-  return (row["KU contact email"] || "")
+  return (row["UCPH contact email"] || "")
     .split("|")
     .map((part) => part.trim())
     .filter(Boolean)
@@ -162,13 +162,13 @@ function kuUnitBadge(unit) {
 
 const LIGHTHOUSE_EMAIL = "lighthouse@ku.dk";
 
-/** Compact KU line: unit badge, then · linked address(es) — same for every programme. */
+/** Compact UCPH line: unit badge, then · linked address(es) — same for every programme. */
 function kuSupportHtml(row) {
-  const unit = (row["KU support unit"] || "").trim();
+  const unit = (row["UCPH support unit"] || "").trim();
   const parts = [kuUnitBadge(unit)];
 
-  if (row["KU faculty focus"] && !/^pre-?award$/i.test(unit)) {
-    parts.push(`<span class="ku-faculty">${escapeHtml(row["KU faculty focus"])}</span>`);
+  if (row["UCPH faculty focus"] && !/^pre-?award$/i.test(unit)) {
+    parts.push(`<span class="ku-faculty">${escapeHtml(row["UCPH faculty focus"])}</span>`);
   }
 
   if (/^lighthouse$/i.test(unit)) {
@@ -184,13 +184,13 @@ function kuSupportHtml(row) {
 
 function kuSupportMobileHtml(row) {
   if (!hasKuSupport(row)) return "";
-  const unit = (row["KU support unit"] || "").trim();
-  return `<span class="mobile-card-ku-label">KU support</span> ${kuUnitBadge(unit)}`;
+  const unit = (row["UCPH support unit"] || "").trim();
+  return `<span class="mobile-card-ku-label">UCPH support</span> ${kuUnitBadge(unit)}`;
 }
 
 function dedicatedKuInbox(row) {
-  const unit = (row["KU support unit"] || "").trim();
-  const email = (row["KU contact email"] || "").trim();
+  const unit = (row["UCPH support unit"] || "").trim();
+  const email = (row["UCPH contact email"] || "").trim();
   if (
     /^lighthouse$/i.test(unit) &&
     email &&
@@ -202,14 +202,14 @@ function dedicatedKuInbox(row) {
 }
 
 function whoToAskContent(row) {
-  const hint = (row["KU contact hint"] || "").trim();
-  const email = (row["KU contact email"] || "").trim();
-  const unit = (row["KU support unit"] || "").trim();
+  const hint = (row["UCPH contact hint"] || "").trim();
+  const email = (row["UCPH contact email"] || "").trim();
+  const unit = (row["UCPH support unit"] || "").trim();
 
-  // Dedicated Lighthouse inboxes live under KU contact & information.
+  // Dedicated Lighthouse inboxes live under UCPH contact & information.
   if (dedicatedKuInbox(row)) return null;
 
-  if (!hint || /^(ku lighthouse|preaward rso)\.?$/i.test(hint)) {
+  if (!hint || /^(ucph lighthouse|preaward rso)\.?$/i.test(hint)) {
     return null;
   }
 
@@ -254,10 +254,10 @@ function fundContactHtml(row) {
     .join(" · ");
 }
 
-/** Programme-specific KU inbox + Lighthouse guidance — separate from the KU support line. */
+/** Programme-specific UCPH inbox + Lighthouse guidance — separate from the UCPH support line. */
 function kuContactInfoHtml(row) {
   const parts = [];
-  const page = (row["KU support page"] || "").trim();
+  const page = (row["UCPH support page"] || "").trim();
   if (page) {
     parts.push(
       `<a href="${escapeHtml(page)}" class="ku-mail" target="_blank" rel="noopener">Lighthouse guidance</a>`
@@ -281,7 +281,7 @@ function rowExtraHtml(row) {
   }
   const kuInfo = kuContactInfoHtml(row);
   if (kuInfo) {
-    blocks.push(`<div><h4>KU contact &amp; information</h4><p>${kuInfo}</p></div>`);
+    blocks.push(`<div><h4>UCPH contact &amp; information</h4><p>${kuInfo}</p></div>`);
   }
   const fund = fundContactHtml(row);
   if (fund) {
@@ -387,7 +387,7 @@ function rowHtml(row, idx) {
   const tags = cvrTags(row);
 
   const kuLine = hasKuSupport(row)
-    ? `<p class="ku-line">KU support: ${kuSupportHtml(row)}</p>`
+    ? `<p class="ku-line">UCPH support: ${kuSupportHtml(row)}</p>`
     : "";
 
   const hasExtra =
