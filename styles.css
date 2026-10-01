@@ -1,5 +1,5 @@
-/* UCPH Lighthouse funding overview.
-   Layout follows the original Lovable app; everything visual follows the UCPH INNO
+/* Funding overview.
+   Layout follows the original Lovable app; everything visual follows the INNO
    design guide (brand directions.pptx):
 
    - Palette is the six named brand colours, with one exception: the landing hero
@@ -92,25 +92,6 @@ thead th,
   margin: 0 auto;
 }
 
-/* ——————————————— Logo bar ———————————————
-   The guide puts the KU logo top-left with a thin line underneath, and swaps to
-   the negative logo on dark backgrounds. */
-.brandbar {
-  padding: 0.9rem 0 0.75rem;
-  border-bottom: var(--rule) solid var(--dark-blue);
-}
-
-.brandbar img { height: 3.5rem; width: auto; }
-
-.hero .brandbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 3;
-  border-bottom-color: rgba(254, 250, 242, 0.55);
-}
-
 /* ——————————————— Landing hero ——————————————— */
 /* The hero photo fades to black rather than dark blue, by preference. */
 .page-landing {
@@ -135,7 +116,7 @@ thead th,
   /* The bottom padding reserves room for the search card's negative margin.
      On tall screens 72vh already covers it; on short laptops the padding grows
      the hero instead of letting the card slide over the lede. */
-  padding: 6.5rem 0 13rem;
+  padding: 3.25rem 0 13rem;
   isolation: isolate;
 }
 
@@ -157,7 +138,7 @@ thead th,
   position: absolute;
   inset: 0;
   z-index: -1;
-  /* Extra weight at the very top so the negative logo stays legible over sky. */
+  /* Soft darkening so the headline stays readable over the photo. */
   background: linear-gradient(
     180deg,
     rgba(0, 0, 0, 0.6) 0%,
@@ -166,10 +147,6 @@ thead th,
     rgba(0, 0, 0, 0.76) 76%,
     #000000 100%
   );
-}
-
-.hero .brandbar .shell {
-  width: var(--landing-col);
 }
 
 .hero-copy {
@@ -854,7 +831,7 @@ tr.is-open .name-cell { width: 13rem; }
   text-transform: uppercase;
 }
 
-/* Small coloured hints — Pre-company, CVR, UCPH unit, etc. */
+/* Small coloured hints — Pre-company, CVR, support unit, etc. */
 .pill {
   display: inline-block;
   padding: 0.12rem 0.42rem;

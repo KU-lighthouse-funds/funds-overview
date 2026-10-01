@@ -185,7 +185,7 @@ function kuSupportHtml(row) {
 function kuSupportMobileHtml(row) {
   if (!hasKuSupport(row)) return "";
   const unit = (row["UCPH support unit"] || "").trim();
-  return `<span class="mobile-card-ku-label">UCPH support</span> ${kuUnitBadge(unit)}`;
+  return `<span class="mobile-card-ku-label">Support</span> ${kuUnitBadge(unit)}`;
 }
 
 function dedicatedKuInbox(row) {
@@ -206,7 +206,7 @@ function whoToAskContent(row) {
   const email = (row["UCPH contact email"] || "").trim();
   const unit = (row["UCPH support unit"] || "").trim();
 
-  // Dedicated Lighthouse inboxes live under UCPH contact & information.
+  // Dedicated Lighthouse inboxes live under Contact & information.
   if (dedicatedKuInbox(row)) return null;
 
   if (!hint || /^(ucph lighthouse|preaward rso)\.?$/i.test(hint)) {
@@ -281,7 +281,7 @@ function rowExtraHtml(row) {
   }
   const kuInfo = kuContactInfoHtml(row);
   if (kuInfo) {
-    blocks.push(`<div><h4>UCPH contact &amp; information</h4><p>${kuInfo}</p></div>`);
+    blocks.push(`<div><h4>Contact &amp; information</h4><p>${kuInfo}</p></div>`);
   }
   const fund = fundContactHtml(row);
   if (fund) {
@@ -387,7 +387,7 @@ function rowHtml(row, idx) {
   const tags = cvrTags(row);
 
   const kuLine = hasKuSupport(row)
-    ? `<p class="ku-line">UCPH support: ${kuSupportHtml(row)}</p>`
+    ? `<p class="ku-line">Support: ${kuSupportHtml(row)}</p>`
     : "";
 
   const hasExtra =
