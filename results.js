@@ -711,15 +711,20 @@ async function init() {
     paintTable();
   });
 
-  document.querySelectorAll(".seg button").forEach((btn) => {
-    const active = btn.dataset.cvr === (state.filters.cvr || "all");
-    btn.setAttribute("aria-pressed", String(active));
-    btn.addEventListener("click", () => {
-      state.filters.cvr = btn.dataset.cvr;
-      document
-        .querySelectorAll(".seg button")
-        .forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
-      applyFiltersAndPaint({ resetExpanded: false, resetPage: true });
+  document.querySelectorAll(".seg").forEach((group) => {
+    const key = group.dataset.seg === "who" ? "who" : "cvr";
+    const dataKey = key === "who" ? "who" : "cvr";
+    group.querySelectorAll("button").forEach((btn) => {
+      const value = btn.dataset[dataKey];
+      const active = value === (state.filters[key] || "all");
+      btn.setAttribute("aria-pressed", String(active));
+      btn.addEventListener("click", () => {
+        state.filters[key] = value;
+        group.querySelectorAll("button").forEach((b) => {
+          b.setAttribute("aria-pressed", String(b === btn));
+        });
+        applyFiltersAndPaint({ resetExpanded: false, resetPage: true });
+      });
     });
   });
 

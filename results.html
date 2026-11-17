@@ -10,7 +10,7 @@
   <link rel="modulepreload" href="results.js" />
   <link rel="modulepreload" href="shared.js" />
   <link rel="modulepreload" href="multiselect.js" />
-  <link rel="stylesheet" href="styles.css?v=9" />
+  <link rel="stylesheet" href="styles.css?v=10" />
 </head>
 <body class="page-results">
   <header class="results-head">
@@ -33,10 +33,15 @@
           <div class="col-filter" id="col-filter-stage-mobile"></div>
         </div>
       </div>
-      <div class="seg" role="group" aria-label="Company status">
+      <div class="seg" data-seg="cvr" role="group" aria-label="Company status">
         <button type="button" data-cvr="all" aria-pressed="true">All</button>
         <button type="button" data-cvr="no-company" aria-pressed="false">No company yet</button>
         <button type="button" data-cvr="have-cvr" aria-pressed="false">I have a CVR</button>
+      </div>
+      <div class="seg" data-seg="who" role="group" aria-label="Students and early career, or researcher">
+        <button type="button" data-who="all" aria-pressed="true">All</button>
+        <button type="button" data-who="student" aria-pressed="false">Students & early career</button>
+        <button type="button" data-who="researcher" aria-pressed="false">Researcher</button>
       </div>
       <div class="toolbar-end">
         <button type="button" id="sort-reset" class="sort-reset" hidden>Reset to default sort</button>

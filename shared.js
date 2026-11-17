@@ -469,6 +469,7 @@ export function filtersFromUrl() {
     opportunities: params.getAll("opportunity"),
     query: (params.get("q") || "").trim(),
     cvr: params.get("cvr") || "all",
+    who: params.get("who") || "all",
   };
 }
 
@@ -479,12 +480,14 @@ export function filtersToSearchParams(filters) {
   (filters.opportunities || []).forEach((v) => params.append("opportunity", v));
   if (filters.query) params.set("q", filters.query);
   if (filters.cvr && filters.cvr !== "all") params.set("cvr", filters.cvr);
+  if (filters.who && filters.who !== "all") params.set("who", filters.who);
   return params;
 }
 
 export function filterProgrammes(programmes, filters) {
   const q = (filters.query || "").toLowerCase();
   const cvr = filters.cvr || "all";
+  const who = (filters.who || "all").toLowerCase();
 
   return programmes.filter((row) => {
     if (filters.stages?.length && !rowMatchesStages(row, filters.stages)) return false;
@@ -515,6 +518,12 @@ export function filterProgrammes(programmes, filters) {
       const atApplication = (row["CVR at application"] || "Any").trim();
       if (cvr === "no-company" && atApplication === "Yes") return false;
       if (cvr === "have-cvr" && atApplication === "No") return false;
+    }
+
+    if (who !== "all") {
+      const audience = (row.Audience || "All").trim().toLowerCase();
+      if (who === "student" && audience === "researcher") return false;
+      if (who === "researcher" && audience === "student") return false;
     }
 
     if (!q) return true;
